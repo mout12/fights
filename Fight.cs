@@ -21,9 +21,7 @@ public class Fight
         while (true)
         {
             Console.Write("> ");
-            var key = Console.ReadKey(intercept: true);
-            Console.WriteLine(); // move to next line after key press
-            var choice = char.ToLowerInvariant(key.KeyChar);
+            var choice = ReadChoice();
 
             if (choice == 'r')
             {
@@ -69,5 +67,30 @@ public class Fight
         }
 
         return false;
+    }
+
+    private char ReadChoice()
+    {
+        try
+        {
+            if (!Console.IsInputRedirected)
+            {
+                var key = Console.ReadKey(intercept: true);
+                Console.WriteLine(); // move to next line after key press
+                return char.ToLowerInvariant(key.KeyChar);
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            // fall through to ReadLine below if ReadKey isn't available
+        }
+
+        var line = Console.ReadLine();
+        if (string.IsNullOrWhiteSpace(line))
+        {
+            return '\0';
+        }
+
+        return char.ToLowerInvariant(line.Trim()[0]);
     }
 }
