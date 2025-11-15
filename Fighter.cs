@@ -4,16 +4,16 @@ namespace fights;
 
 public class Fighter : IFighter
 {
-    public Fighter(string name, int health, int damage)
+    public Fighter(string name, int health, IWeapon weapon)
     {
         Name = name;
         Health = health;
-        Damage = damage;
+        Weapon = weapon;
     }
 
     public string Name { get; private set; }
     public int Health { get; private set; }
-    public int Damage { get; private set; }
+    public IWeapon Weapon { get; private set; }
 
     public void TakeDamage(int amount)
     {

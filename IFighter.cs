@@ -4,6 +4,6 @@ public interface IFighter
 {
     string Name { get; }
     int Health { get; }
-    int Damage { get; }
+    IWeapon Weapon { get; }
     void TakeDamage(int amount);
 }
