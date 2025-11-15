@@ -1,0 +1,17 @@
+# Build results
+bin/
+obj/
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+
+# IDE settings
+.vscode/
+.vs/
+
+# Others
+*.log
+.DS_Store
