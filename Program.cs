@@ -16,8 +16,8 @@ var jackson = new Fighter(
     weapon: new Weapon(name: "Fists", damage: 1),
     gold: 100u);
 
-var shop = new Shop(weaponOffers);
-shop.Enter(jackson);
+var blacksmith = new Blacksmith(weaponOffers);
+blacksmith.Enter(jackson);
 
 var enemies = new List<Fighter>
 {

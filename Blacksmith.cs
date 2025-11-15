@@ -4,11 +4,11 @@ using System.Linq;
 
 namespace fights;
 
-public class Shop
+public class Blacksmith
 {
     private readonly List<(IWeapon Weapon, uint Cost)> _weaponOffers;
 
-    public Shop(IEnumerable<(IWeapon weapon, uint cost)> weaponOffers)
+    public Blacksmith(IEnumerable<(IWeapon weapon, uint cost)> weaponOffers)
     {
         if (weaponOffers is null)
         {
@@ -30,7 +30,7 @@ public class Shop
             throw new ArgumentNullException(nameof(fighter));
         }
 
-        Console.WriteLine("Welcome to the armory!");
+        Console.WriteLine("Welcome to the blacksmith's forge!");
         Console.WriteLine($"You've got {fighter.Gold}g to spend. Choose a weapon to take into the fight:");
 
         for (var i = 0; i < _weaponOffers.Count; i++)
