@@ -16,22 +16,24 @@ public class Fight
     public void Start()
     {
         Console.WriteLine($"A fight begins between {_fighterOne.Name} and {_fighterTwo.Name}!");
-        Console.WriteLine($"Enter 'a' to attack or 'r' to run.");
+        Console.WriteLine($"Press 'a' to attack or 'r' to run.");
 
         while (true)
         {
             Console.Write("> ");
-            var choice = Console.ReadLine()?.Trim().ToLowerInvariant();
+            var key = Console.ReadKey(intercept: true);
+            Console.WriteLine(); // move to next line after key press
+            var choice = char.ToLowerInvariant(key.KeyChar);
 
-            if (choice == "r")
+            if (choice == 'r')
             {
                 Console.WriteLine($"{_fighterOne.Name} decides to live another day.");
                 break;
             }
 
-            if (choice != "a")
+            if (choice != 'a')
             {
-                Console.WriteLine("Invalid choice. Enter 'a' to attack or 'r' to run.");
+                Console.WriteLine("Invalid choice. Press 'a' to attack or 'r' to run.");
                 continue;
             }
 
