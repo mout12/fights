@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using fights;
 
-var weaponOffers = new List<(Weapon weapon, uint cost)>
+var weaponOffers = new List<(IWeapon weapon, uint cost)>
 {
     (new Weapon(name: "Dagger", damage: 5), 30u),
     (new Weapon(name: "Short Sword", damage: 7), 55u),
@@ -16,44 +16,8 @@ var jackson = new Fighter(
     weapon: new Weapon(name: "Fists", damage: 1),
     gold: 100u);
 
-Console.WriteLine("Welcome to the armory! You've got 100g to spend.");
-Console.WriteLine("Choose a weapon to take into the fight:");
-
-for (var i = 0; i < weaponOffers.Count; i++)
-{
-    var (weapon, cost) = weaponOffers[i];
-    Console.WriteLine($"{i + 1}. {weapon.Name} (Damage: {weapon.Damage}) - {cost}g");
-}
-
-while (true)
-{
-    Console.Write("Enter weapon number to purchase or press Enter to keep your current weapon: ");
-    var input = Console.ReadLine();
-
-    if (string.IsNullOrWhiteSpace(input))
-    {
-        Console.WriteLine($"You keep your {jackson.Weapon.Name} and {jackson.Gold}g.");
-        break;
-    }
-
-    if (!int.TryParse(input, out var choice) || choice < 1 || choice > weaponOffers.Count)
-    {
-        Console.WriteLine("Invalid selection. Choose a number from the list.");
-        continue;
-    }
-
-    var (selectedWeapon, cost) = weaponOffers[choice - 1];
-
-    if (!jackson.TrySpendGold(cost))
-    {
-        Console.WriteLine("Not enough gold. Pick something cheaper.");
-        continue;
-    }
-
-    jackson.EquipWeapon(selectedWeapon);
-    Console.WriteLine($"You purchased the {selectedWeapon.Name}! Remaining gold: {jackson.Gold}g.");
-    break;
-}
+var shop = new Shop(weaponOffers);
+shop.Enter(jackson);
 
 var enemies = new List<Fighter>
 {
