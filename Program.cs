@@ -26,10 +26,7 @@ var jackson = new Fighter(
     gold: 100u);
 
 var blacksmith = new Blacksmith(weaponOffers);
-blacksmith.Enter(jackson);
-
 var armorer = new Armorer(armorOffers);
-armorer.Enter(jackson);
 
 var enemies = new List<Fighter>
 {
@@ -39,10 +36,5 @@ var enemies = new List<Fighter>
     new Fighter(name: "Skeleton Knight", health: 110, weapon: new Weapon(name: "Ancient Sword", damage: 6), armor: new Armor(name: "Bone Plating", defense: 2), gold: 0u)
 };
 
-var random = new Random();
-var enemy = enemies[random.Next(enemies.Count)];
-
-Console.WriteLine($"A wild {enemy.Name} appears! Prepare for battle.");
-
-var fight = new Fight(jackson, enemy);
-fight.Start();
+var town = new Town(jackson, blacksmith, armorer, enemies);
+town.Enter();
