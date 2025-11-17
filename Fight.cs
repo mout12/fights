@@ -44,9 +44,10 @@ public class Fight
 
     private bool ExecuteTurn()
     {
-        var firstStrikeDamage = _fighterOne.Weapon.Damage;
-        _fighterTwo.TakeDamage(firstStrikeDamage);
-        Console.WriteLine($"{_fighterOne.Name} attacks with {_fighterOne.Weapon.Name} for {firstStrikeDamage} damage. {_fighterTwo.Name} has {_fighterTwo.Health} health remaining.");
+        var firstStrikeWeapon = _fighterOne.Weapon;
+        var firstStrikeDamage = firstStrikeWeapon.Damage;
+        _fighterTwo.TakeDamage(firstStrikeWeapon);
+        Console.WriteLine($"{_fighterOne.Name} attacks with {firstStrikeWeapon.Name} for {firstStrikeDamage} damage. {_fighterTwo.Name} has {_fighterTwo.Health} health remaining.");
 
         if (_fighterTwo.Health <= 0)
         {
@@ -55,9 +56,10 @@ public class Fight
             return true;
         }
 
-        var counterStrikeDamage = _fighterTwo.Weapon.Damage;
-        _fighterOne.TakeDamage(counterStrikeDamage);
-        Console.WriteLine($"{_fighterTwo.Name} retaliates with {_fighterTwo.Weapon.Name} for {counterStrikeDamage} damage. {_fighterOne.Name} has {_fighterOne.Health} health remaining.");
+        var counterStrikeWeapon = _fighterTwo.Weapon;
+        var counterStrikeDamage = counterStrikeWeapon.Damage;
+        _fighterOne.TakeDamage(counterStrikeWeapon);
+        Console.WriteLine($"{_fighterTwo.Name} retaliates with {counterStrikeWeapon.Name} for {counterStrikeDamage} damage. {_fighterOne.Name} has {_fighterOne.Health} health remaining.");
 
         if (_fighterOne.Health <= 0)
         {

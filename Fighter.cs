@@ -17,14 +17,17 @@ public class Fighter : IFighter
     public IWeapon Weapon { get; private set; }
     public uint Gold { get; private set; }
 
-    public void TakeDamage(int amount)
+    public void TakeDamage(IWeapon weapon)
     {
-        if (amount < 0)
+        weapon = weapon ?? throw new ArgumentNullException(nameof(weapon));
+
+        var damage = weapon.Damage;
+        if (damage < 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(amount), "Damage must be non-negative.");
+            throw new ArgumentOutOfRangeException(nameof(weapon), "Damage must be non-negative.");
         }
 
-        var updatedHealth = Health - amount;
+        var updatedHealth = Health - damage;
         Health = updatedHealth < 0 ? 0 : updatedHealth;
     }
 

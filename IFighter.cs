@@ -6,5 +6,5 @@ public interface IFighter
     int Health { get; }
     IWeapon Weapon { get; }
     uint Gold { get; }
-    void TakeDamage(int amount);
+    void TakeDamage(IWeapon weapon);
 }
