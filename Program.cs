@@ -10,6 +10,14 @@ var weaponOffers = new List<(IWeapon weapon, uint cost)>
     (new Weapon(name: "Wizard Staff", damage: 11), 100u)
 };
 
+var armorOffers = new List<(IArmor armor, uint cost)>
+{
+    (new Armor(name: "Padded Vest", defense: 2), 35u),
+    (new Armor(name: "Chain Shirt", defense: 4), 60u),
+    (new Armor(name: "Enchanted Robes", defense: 5), 75u),
+    (new Armor(name: "Plate Mail", defense: 6), 90u)
+};
+
 var jackson = new Fighter(
     name: "Jackson",
     health: 100,
@@ -19,6 +27,9 @@ var jackson = new Fighter(
 
 var blacksmith = new Blacksmith(weaponOffers);
 blacksmith.Enter(jackson);
+
+var armorer = new Armorer(armorOffers);
+armorer.Enter(jackson);
 
 var enemies = new List<Fighter>
 {

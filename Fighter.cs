@@ -56,4 +56,9 @@ public class Fighter : IFighter
     {
         Weapon = weapon ?? throw new ArgumentNullException(nameof(weapon));
     }
+
+    public void EquipArmor(IArmor armor)
+    {
+        Armor = armor ?? throw new ArgumentNullException(nameof(armor));
+    }
 }
