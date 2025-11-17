@@ -18,8 +18,9 @@ var armorOffers = new List<(IArmor armor, uint cost)>
     (new Armor(name: "Plate Mail", defense: 6), 90u)
 };
 
-var jackson = new Fighter(
+var jackson = new Player(
     name: "Jackson",
+    level: 1,
     health: 100,
     weapon: new Weapon(name: "Fists", damage: 1),
     armor: new Armor(name: "Cloth Shirt", defense: 1),
@@ -36,5 +37,11 @@ var enemies = new List<Fighter>
     new Fighter(name: "Skeleton Knight", health: 110, weapon: new Weapon(name: "Ancient Sword", damage: 6), armor: new Armor(name: "Bone Plating", defense: 2), gold: 15u)
 };
 
-var town = new Town(jackson, blacksmith, armorer, enemies);
+var bosses = new List<Boss>
+{
+    new Boss(name: "Dragon Whelp", level: 1, health: 200, weapon: new Weapon(name: "Flame Breath", damage: 12), armor: new Armor(name: "Scale Hide", defense: 4), gold: 50u),
+    new Boss(name: "Lich Lord", level: 2, health: 260, weapon: new Weapon(name: "Soul Drain", damage: 15), armor: new Armor(name: "Shadow Shroud", defense: 5), gold: 75u)
+};
+
+var town = new Town(jackson, blacksmith, armorer, enemies, bosses);
 town.Enter();
