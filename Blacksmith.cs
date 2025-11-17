@@ -41,12 +41,18 @@ public class Blacksmith
 
         while (true)
         {
-            Console.Write("Enter weapon number to purchase or press Enter to keep your current weapon: ");
+            Console.Write("Enter weapon number to purchase, 'q' to leave, or press Enter to keep your current weapon: ");
             var input = Console.ReadLine();
 
             if (string.IsNullOrWhiteSpace(input))
             {
                 Console.WriteLine($"You keep your {fighter.Weapon.Name} and {fighter.Gold}g.");
+                break;
+            }
+
+            if (string.Equals(input.Trim(), "q", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine("You leave the blacksmith without buying anything.");
                 break;
             }
 

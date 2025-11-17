@@ -41,12 +41,18 @@ public class Armorer
 
         while (true)
         {
-            Console.Write("Enter armor number to purchase or press Enter to keep your current armor: ");
+            Console.Write("Enter armor number to purchase, 'q' to leave, or press Enter to keep your current armor: ");
             var input = Console.ReadLine();
 
             if (string.IsNullOrWhiteSpace(input))
             {
                 Console.WriteLine($"You keep your {fighter.Armor.Name} and {fighter.Gold}g.");
+                break;
+            }
+
+            if (string.Equals(input.Trim(), "q", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine("You leave the armorer without buying anything.");
                 break;
             }
 
