@@ -46,8 +46,8 @@ public class Fight
     {
         var firstStrikeWeapon = _fighterOne.Weapon;
         var firstStrikeDamage = firstStrikeWeapon.Damage;
-        _fighterTwo.TakeDamage(firstStrikeWeapon);
-        Console.WriteLine($"{_fighterOne.Name} attacks with {firstStrikeWeapon.Name} for {firstStrikeDamage} damage. {_fighterTwo.Name} has {_fighterTwo.Health} health remaining.");
+        var firstStrikeDealt = _fighterTwo.TakeDamage(firstStrikeWeapon);
+        Console.WriteLine($"{_fighterOne.Name} attacks with {firstStrikeWeapon.Name} for {firstStrikeDealt} damage. {_fighterTwo.Name} has {_fighterTwo.Health} health remaining.");
 
         if (_fighterTwo.Health <= 0)
         {
@@ -58,8 +58,8 @@ public class Fight
 
         var counterStrikeWeapon = _fighterTwo.Weapon;
         var counterStrikeDamage = counterStrikeWeapon.Damage;
-        _fighterOne.TakeDamage(counterStrikeWeapon);
-        Console.WriteLine($"{_fighterTwo.Name} retaliates with {counterStrikeWeapon.Name} for {counterStrikeDamage} damage. {_fighterOne.Name} has {_fighterOne.Health} health remaining.");
+        var counterStrikeDealt = _fighterOne.TakeDamage(counterStrikeWeapon);
+        Console.WriteLine($"{_fighterTwo.Name} retaliates with {counterStrikeWeapon.Name} for {counterStrikeDealt} damage. {_fighterOne.Name} has {_fighterOne.Health} health remaining.");
 
         if (_fighterOne.Health <= 0)
         {

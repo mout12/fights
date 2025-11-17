@@ -5,6 +5,7 @@ public interface IFighter
     string Name { get; }
     int Health { get; }
     IWeapon Weapon { get; }
+    IArmor Armor { get; }
     uint Gold { get; }
-    void TakeDamage(IWeapon weapon);
+    int TakeDamage(IWeapon weapon);
 }
