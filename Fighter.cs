@@ -19,14 +19,14 @@ public class Fighter : IFighter
     public IArmor Armor { get; private set; }
     public uint Gold { get; private set; }
 
-    public int TakeDamage(IWeapon weapon)
+    public int TakeDamage(IDamagePayload damagePayload)
     {
-        weapon = weapon ?? throw new ArgumentNullException(nameof(weapon));
+        damagePayload = damagePayload ?? throw new ArgumentNullException(nameof(damagePayload));
 
-        var baseDamage = weapon.Damage;
+        var baseDamage = damagePayload.Damage;
         if (baseDamage < 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(weapon), "Damage must be non-negative.");
+            throw new ArgumentOutOfRangeException(nameof(damagePayload), "Damage must be non-negative.");
         }
 
         var mitigatedDamage = baseDamage;

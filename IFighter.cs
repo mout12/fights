@@ -7,5 +7,5 @@ public interface IFighter
     IWeapon Weapon { get; }
     IArmor Armor { get; }
     uint Gold { get; }
-    int TakeDamage(IWeapon weapon);
+    int TakeDamage(IDamagePayload damagePayload);
 }

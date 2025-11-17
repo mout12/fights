@@ -45,9 +45,10 @@ public class Fight
     private bool ExecuteTurn()
     {
         var firstStrikeWeapon = _fighterOne.Weapon;
-        var firstStrikeDamage = firstStrikeWeapon.Damage;
-        var firstStrikeDealt = _fighterTwo.TakeDamage(firstStrikeWeapon);
-        Console.WriteLine($"{_fighterOne.Name} attacks with {firstStrikeWeapon.Name} for {firstStrikeDealt} damage. {_fighterTwo.Name} has {_fighterTwo.Health} health remaining.");
+        var firstStrikePayload = firstStrikeWeapon.CreateDamagePayload();
+        var firstStrikeDealt = _fighterTwo.TakeDamage(firstStrikePayload);
+        var firstStrikeSuffix = firstStrikePayload.IsCritical ? " (critical strike!)" : string.Empty;
+        Console.WriteLine($"{_fighterOne.Name} attacks with {firstStrikeWeapon.Name} for {firstStrikeDealt} damage{firstStrikeSuffix}. {_fighterTwo.Name} has {_fighterTwo.Health} health remaining.");
 
         if (_fighterTwo.Health <= 0)
         {
@@ -57,9 +58,10 @@ public class Fight
         }
 
         var counterStrikeWeapon = _fighterTwo.Weapon;
-        var counterStrikeDamage = counterStrikeWeapon.Damage;
-        var counterStrikeDealt = _fighterOne.TakeDamage(counterStrikeWeapon);
-        Console.WriteLine($"{_fighterTwo.Name} retaliates with {counterStrikeWeapon.Name} for {counterStrikeDealt} damage. {_fighterOne.Name} has {_fighterOne.Health} health remaining.");
+        var counterStrikePayload = counterStrikeWeapon.CreateDamagePayload();
+        var counterStrikeDealt = _fighterOne.TakeDamage(counterStrikePayload);
+        var counterStrikeSuffix = counterStrikePayload.IsCritical ? " (critical strike!)" : string.Empty;
+        Console.WriteLine($"{_fighterTwo.Name} retaliates with {counterStrikeWeapon.Name} for {counterStrikeDealt} damage{counterStrikeSuffix}. {_fighterOne.Name} has {_fighterOne.Health} health remaining.");
 
         if (_fighterOne.Health <= 0)
         {
