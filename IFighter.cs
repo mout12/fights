@@ -8,4 +8,5 @@ public interface IFighter
     IArmor Armor { get; }
     uint Gold { get; }
     int TakeDamage(IDamagePayload damagePayload);
+    void GainGold(uint amount);
 }

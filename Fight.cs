@@ -53,6 +53,11 @@ public class Fight
         if (_fighterTwo.Health <= 0)
         {
             Console.WriteLine($"{_fighterTwo.Name} has been defeated!");
+            if (_fighterTwo.Gold > 0)
+            {
+                _fighterOne.GainGold(_fighterTwo.Gold);
+                Console.WriteLine($"{_fighterOne.Name} loots {_fighterTwo.Gold} gold.");
+            }
             Console.WriteLine($"{_fighterOne.Name} wins!");
             return true;
         }
@@ -66,6 +71,11 @@ public class Fight
         if (_fighterOne.Health <= 0)
         {
             Console.WriteLine($"{_fighterOne.Name} has been defeated!");
+            if (_fighterOne.Gold > 0)
+            {
+                _fighterTwo.GainGold(_fighterOne.Gold);
+                Console.WriteLine($"{_fighterTwo.Name} loots {_fighterOne.Gold} gold.");
+            }
             Console.WriteLine($"{_fighterTwo.Name} wins!");
             return true;
         }

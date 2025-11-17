@@ -52,6 +52,11 @@ public class Fighter : IFighter
         return true;
     }
 
+    public void GainGold(uint amount)
+    {
+        Gold = checked(Gold + amount);
+    }
+
     public void EquipWeapon(IWeapon weapon)
     {
         Weapon = weapon ?? throw new ArgumentNullException(nameof(weapon));
