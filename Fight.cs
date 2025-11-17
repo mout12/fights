@@ -13,7 +13,7 @@ public class Fight
         _fighterTwo = fighterTwo;
     }
 
-    public void Start()
+    public bool Start()
     {
         Console.WriteLine($"A fight begins between {_fighterOne.Name} and {_fighterTwo.Name}!");
         Console.WriteLine($"Press 'a' to attack or 'r' to run.");
@@ -26,7 +26,7 @@ public class Fight
             if (choice == 'r')
             {
                 Console.WriteLine($"{_fighterOne.Name} decides to live another day.");
-                break;
+                return true;
             }
 
             if (choice != 'a')
@@ -37,7 +37,7 @@ public class Fight
 
             if (ExecuteTurn())
             {
-                break;
+                return _fighterOne.Health > 0;
             }
         }
     }

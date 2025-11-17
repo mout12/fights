@@ -48,8 +48,12 @@ public class Town
                     _armorer.Enter(_player);
                     break;
                 case "3":
-                    StartFight();
-                    return;
+                    if (!StartFight())
+                    {
+                        Console.WriteLine("Your adventure ends here.");
+                        return;
+                    }
+                    break;
                 case "4":
                     Console.WriteLine("You decide to rest and leave the adventure for another day.");
                     return;
@@ -60,12 +64,12 @@ public class Town
         }
     }
 
-    private void StartFight()
+    private bool StartFight()
     {
         var enemy = _enemies[Random.Shared.Next(_enemies.Count)];
         Console.WriteLine($"A wild {enemy.Name} appears! Prepare for battle.");
 
         var fight = new Fight(_player, enemy);
-        fight.Start();
+        return fight.Start();
     }
 }
