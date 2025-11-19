@@ -9,21 +9,31 @@ public class Town
     private readonly Blacksmith _blacksmith;
     private readonly Armorer _armorer;
     private readonly HealersHut _healersHut;
-    private readonly List<Fighter> _enemies;
+    private readonly Dictionary<int, List<Fighter>> _enemiesByLevel;
     private readonly List<Boss> _bosses;
 
-    public Town(Player player, Blacksmith blacksmith, Armorer armorer, HealersHut healersHut, List<Fighter> enemies, List<Boss> bosses)
+    public Town(Player player, Blacksmith blacksmith, Armorer armorer, HealersHut healersHut, Dictionary<int, List<Fighter>> enemiesByLevel, List<Boss> bosses)
     {
         _player = player ?? throw new ArgumentNullException(nameof(player));
         _blacksmith = blacksmith ?? throw new ArgumentNullException(nameof(blacksmith));
         _armorer = armorer ?? throw new ArgumentNullException(nameof(armorer));
         _healersHut = healersHut ?? throw new ArgumentNullException(nameof(healersHut));
-        _enemies = enemies ?? throw new ArgumentNullException(nameof(enemies));
+        _enemiesByLevel = enemiesByLevel ?? throw new ArgumentNullException(nameof(enemiesByLevel));
         _bosses = bosses ?? throw new ArgumentNullException(nameof(bosses));
 
-        if (_enemies.Count == 0)
+        var hasAnyEnemies = false;
+        foreach (var (_, enemies) in _enemiesByLevel)
         {
-            throw new ArgumentException("Town must have at least one enemy to fight.", nameof(enemies));
+            if (enemies is { Count: > 0 })
+            {
+                hasAnyEnemies = true;
+                break;
+            }
+        }
+
+        if (!hasAnyEnemies)
+        {
+            throw new ArgumentException("Town must have at least one enemy to fight.", nameof(enemiesByLevel));
         }
 
         if (_bosses.Count == 0)
@@ -91,7 +101,13 @@ public class Town
 
     private bool StartFight()
     {
-        var enemy = _enemies[Random.Shared.Next(_enemies.Count)];
+        if (!_enemiesByLevel.TryGetValue(_player.Level, out var enemiesForLevel) || enemiesForLevel.Count == 0)
+        {
+            Console.WriteLine("No enemies are available for your current level. Try a different challenge.");
+            return true;
+        }
+
+        var enemy = enemiesForLevel[Random.Shared.Next(enemiesForLevel.Count)];
         Console.WriteLine($"A wild {enemy.Name} appears! Prepare for battle.");
 
         var fight = new Fight(_player, enemy);

@@ -30,12 +30,26 @@ var blacksmith = new Blacksmith(weaponOffers);
 var armorer = new Armorer(armorOffers);
 var healersHut = new HealersHut();
 
-var enemies = new List<Fighter>
+var levelOneEnemies = new List<Fighter>
 {
     new Fighter(name: "Nerd", health: 120, weapon: new Weapon(name: "Stick", damage: 1), armor: new Armor(name: "Thick Glasses", defense: 1), gold: 5u),
     new Fighter(name: "Goblin", health: 80, weapon: new Weapon(name: "Rusty Blade", damage: 4), armor: new Armor(name: "Leather Scraps", defense: 2), gold: 12u),
+    new Fighter(name: "Rabid Dog", health: 70, weapon: new Weapon(name: "Fangs", damage: 5), armor: new Armor(name: "Matted Fur", defense: 1), gold: 8u),
+    new Fighter(name: "Bandit", health: 90, weapon: new Weapon(name: "Shiv", damage: 6), armor: new Armor(name: "Patchwork Vest", defense: 2), gold: 15u)
+};
+
+var levelTwoEnemies = new List<Fighter>
+{
     new Fighter(name: "Orc Warrior", health: 140, weapon: new Weapon(name: "Heavy Club", damage: 7), armor: new Armor(name: "Chain Vest", defense: 3), gold: 20u),
-    new Fighter(name: "Skeleton Knight", health: 110, weapon: new Weapon(name: "Ancient Sword", damage: 6), armor: new Armor(name: "Bone Plating", defense: 2), gold: 15u)
+    new Fighter(name: "Skeleton Knight", health: 110, weapon: new Weapon(name: "Ancient Sword", damage: 6), armor: new Armor(name: "Bone Plating", defense: 2), gold: 15u),
+    new Fighter(name: "Dark Archer", health: 100, weapon: new Weapon(name: "Shadow Bow", damage: 8), armor: new Armor(name: "Hooded Cloak", defense: 3), gold: 18u),
+    new Fighter(name: "Troll Bruiser", health: 160, weapon: new Weapon(name: "Stone Hammer", damage: 9), armor: new Armor(name: "Thick Hide", defense: 4), gold: 25u)
+};
+
+var enemiesByLevel = new Dictionary<int, List<Fighter>>
+{
+    [1] = levelOneEnemies,
+    [2] = levelTwoEnemies
 };
 
 var bosses = new List<Boss>
@@ -44,5 +58,5 @@ var bosses = new List<Boss>
     new Boss(name: "Lich Lord", level: 2, health: 260, weapon: new Weapon(name: "Soul Drain", damage: 15), armor: new Armor(name: "Shadow Shroud", defense: 5), gold: 75u)
 };
 
-var town = new Town(jackson, blacksmith, armorer, healersHut, enemies, bosses);
+var town = new Town(jackson, blacksmith, armorer, healersHut, enemiesByLevel, bosses);
 town.Enter();
