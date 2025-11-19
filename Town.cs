@@ -8,14 +8,16 @@ public class Town
     private readonly Player _player;
     private readonly Blacksmith _blacksmith;
     private readonly Armorer _armorer;
+    private readonly HealersHut _healersHut;
     private readonly List<Fighter> _enemies;
     private readonly List<Boss> _bosses;
 
-    public Town(Player player, Blacksmith blacksmith, Armorer armorer, List<Fighter> enemies, List<Boss> bosses)
+    public Town(Player player, Blacksmith blacksmith, Armorer armorer, HealersHut healersHut, List<Fighter> enemies, List<Boss> bosses)
     {
         _player = player ?? throw new ArgumentNullException(nameof(player));
         _blacksmith = blacksmith ?? throw new ArgumentNullException(nameof(blacksmith));
         _armorer = armorer ?? throw new ArgumentNullException(nameof(armorer));
+        _healersHut = healersHut ?? throw new ArgumentNullException(nameof(healersHut));
         _enemies = enemies ?? throw new ArgumentNullException(nameof(enemies));
         _bosses = bosses ?? throw new ArgumentNullException(nameof(bosses));
 
@@ -37,16 +39,17 @@ public class Town
         while (true)
         {
             Console.WriteLine();
-            Console.WriteLine($"Status: Level={_player.Level} | Weapon={_player.Weapon.Name} | Armor={_player.Armor.Name} | Gold={_player.Gold}g | Health={_player.Health}");
+            Console.WriteLine($"Status: Level={_player.Level} | Weapon={_player.Weapon.Name} | Armor={_player.Armor.Name} | Gold={_player.Gold}g | Health={_player.Health}/{_player.MaxHealth}");
             Console.WriteLine("1. Visit the blacksmith");
             Console.WriteLine("2. Visit the armorer");
-            Console.WriteLine("3. Venture out and fight");
+            Console.WriteLine("3. Visit the healer's hut");
+            Console.WriteLine("4. Venture out and fight");
             var currentBoss = _bosses.Find(b => b.Level == _player.Level);
             var bossOption = currentBoss is null
-                ? "4. Challenge the boss (none available for your level)"
-                : $"4. Challenge the boss: {currentBoss.Name} (Level {currentBoss.Level})";
+                ? "5. Challenge the boss (none available for your level)"
+                : $"5. Challenge the boss: {currentBoss.Name} (Level {currentBoss.Level})";
             Console.WriteLine(bossOption);
-            Console.WriteLine("5. Leave town");
+            Console.WriteLine("6. Leave town");
             Console.Write("> ");
 
             var choice = Console.ReadLine()?.Trim();
@@ -60,24 +63,27 @@ public class Town
                     _armorer.Enter(_player);
                     break;
                 case "3":
+                    _healersHut.Enter(_player);
+                    break;
+                case "4":
                     if (!StartFight())
                     {
                         Console.WriteLine("Your adventure ends here.");
                         return;
                     }
                     break;
-                case "4":
+                case "5":
                     if (!StartBossFight())
                     {
                         Console.WriteLine("Your adventure ends here.");
                         return;
                     }
                     break;
-                case "5":
+                case "6":
                     Console.WriteLine("You decide to rest and leave the adventure for another day.");
                     return;
                 default:
-                    Console.WriteLine("Invalid choice. Please select 1, 2, 3, 4, or 5.");
+                    Console.WriteLine("Invalid choice. Please select 1, 2, 3, 4, 5, or 6.");
                     break;
             }
         }

@@ -7,6 +7,12 @@ public class Fighter : IFighter
     public Fighter(string name, int health, IWeapon weapon, IArmor armor, uint gold)
     {
         Name = name;
+        if (health <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(health), "Health must be positive.");
+        }
+
+        MaxHealth = health;
         Health = health;
         Weapon = weapon ?? throw new ArgumentNullException(nameof(weapon));
         Armor = armor ?? throw new ArgumentNullException(nameof(armor));
@@ -15,6 +21,7 @@ public class Fighter : IFighter
 
     public string Name { get; private set; }
     public int Health { get; private set; }
+    public int MaxHealth { get; private set; }
     public IWeapon Weapon { get; private set; }
     public IArmor Armor { get; private set; }
     public uint Gold { get; private set; }
@@ -55,6 +62,11 @@ public class Fighter : IFighter
     public void GainGold(uint amount)
     {
         Gold = checked(Gold + amount);
+    }
+
+    public void HealToFull()
+    {
+        Health = MaxHealth;
     }
 
     public void EquipWeapon(IWeapon weapon)

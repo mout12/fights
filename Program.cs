@@ -24,10 +24,11 @@ var jackson = new Player(
     health: 100,
     weapon: new Weapon(name: "Fists", damage: 1),
     armor: new Armor(name: "Cloth Shirt", defense: 1),
-    gold: 100u);
+    gold: 1000u);
 
 var blacksmith = new Blacksmith(weaponOffers);
 var armorer = new Armorer(armorOffers);
+var healersHut = new HealersHut();
 
 var enemies = new List<Fighter>
 {
@@ -43,5 +44,5 @@ var bosses = new List<Boss>
     new Boss(name: "Lich Lord", level: 2, health: 260, weapon: new Weapon(name: "Soul Drain", damage: 15), armor: new Armor(name: "Shadow Shroud", defense: 5), gold: 75u)
 };
 
-var town = new Town(jackson, blacksmith, armorer, enemies, bosses);
+var town = new Town(jackson, blacksmith, armorer, healersHut, enemies, bosses);
 town.Enter();
