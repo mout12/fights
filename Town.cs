@@ -9,36 +9,19 @@ public class Town
     private readonly Blacksmith _blacksmith;
     private readonly Armorer _armorer;
     private readonly HealersHut _healersHut;
-    private readonly Dictionary<int, List<Fighter>> _enemiesByLevel;
-    private readonly List<Boss> _bosses;
+    private readonly Dictionary<int, LevelContent> _levels;
 
-    public Town(Player player, Blacksmith blacksmith, Armorer armorer, HealersHut healersHut, Dictionary<int, List<Fighter>> enemiesByLevel, List<Boss> bosses)
+    public Town(Player player, Blacksmith blacksmith, Armorer armorer, HealersHut healersHut, Dictionary<int, LevelContent> levels)
     {
         _player = player ?? throw new ArgumentNullException(nameof(player));
         _blacksmith = blacksmith ?? throw new ArgumentNullException(nameof(blacksmith));
         _armorer = armorer ?? throw new ArgumentNullException(nameof(armorer));
         _healersHut = healersHut ?? throw new ArgumentNullException(nameof(healersHut));
-        _enemiesByLevel = enemiesByLevel ?? throw new ArgumentNullException(nameof(enemiesByLevel));
-        _bosses = bosses ?? throw new ArgumentNullException(nameof(bosses));
+        _levels = levels ?? throw new ArgumentNullException(nameof(levels));
 
-        var hasAnyEnemies = false;
-        foreach (var (_, enemies) in _enemiesByLevel)
+        if (_levels.Count == 0)
         {
-            if (enemies is { Count: > 0 })
-            {
-                hasAnyEnemies = true;
-                break;
-            }
-        }
-
-        if (!hasAnyEnemies)
-        {
-            throw new ArgumentException("Town must have at least one enemy to fight.", nameof(enemiesByLevel));
-        }
-
-        if (_bosses.Count == 0)
-        {
-            throw new ArgumentException("Town must have at least one boss to fight.", nameof(bosses));
+            throw new ArgumentException("Town must define at least one level of content.", nameof(levels));
         }
     }
 
@@ -54,7 +37,7 @@ public class Town
             Console.WriteLine("2. Visit the armorer");
             Console.WriteLine("3. Visit the healer's hut");
             Console.WriteLine("4. Venture out and fight");
-            var currentBoss = _bosses.Find(b => b.Level == _player.Level);
+            var currentBoss = _levels.TryGetValue(_player.Level, out var level) ? level.Boss : null;
             var bossOption = currentBoss is null
                 ? "5. Challenge the boss (none available for your level)"
                 : $"5. Challenge the boss: {currentBoss.Name} (Level {currentBoss.Level})";
@@ -101,13 +84,13 @@ public class Town
 
     private bool StartFight()
     {
-        if (!_enemiesByLevel.TryGetValue(_player.Level, out var enemiesForLevel) || enemiesForLevel.Count == 0)
+        if (!_levels.TryGetValue(_player.Level, out var level) || level.Enemies.Count == 0)
         {
             Console.WriteLine("No enemies are available for your current level. Try a different challenge.");
             return true;
         }
 
-        var enemy = enemiesForLevel[Random.Shared.Next(enemiesForLevel.Count)];
+        var enemy = level.Enemies[Random.Shared.Next(level.Enemies.Count)];
         Console.WriteLine($"A wild {enemy.Name} appears! Prepare for battle.");
 
         var fight = new Fight(_player, enemy);
@@ -116,7 +99,13 @@ public class Town
 
     private bool StartBossFight()
     {
-        var boss = _bosses.Find(b => b.Level == _player.Level);
+        if (!_levels.TryGetValue(_player.Level, out var level))
+        {
+            Console.WriteLine("No boss is available for your current level.");
+            return true;
+        }
+
+        var boss = level.Boss;
         if (boss == null)
         {
             Console.WriteLine("No boss is available for your current level.");

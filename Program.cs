@@ -46,17 +46,11 @@ var levelTwoEnemies = new List<Fighter>
     new Fighter(name: "Troll Bruiser", health: 160, weapon: new Weapon(name: "Stone Hammer", damage: 9), armor: new Armor(name: "Thick Hide", defense: 4), gold: 25u)
 };
 
-var enemiesByLevel = new Dictionary<int, List<Fighter>>
+var levelContents = new Dictionary<int, LevelContent>
 {
-    [1] = levelOneEnemies,
-    [2] = levelTwoEnemies
+    [1] = new LevelContent(levelOneEnemies, new Boss(name: "Dragon Whelp", level: 1, health: 200, weapon: new Weapon(name: "Flame Breath", damage: 12), armor: new Armor(name: "Scale Hide", defense: 4), gold: 50u)),
+    [2] = new LevelContent(levelTwoEnemies, new Boss(name: "Lich Lord", level: 2, health: 260, weapon: new Weapon(name: "Soul Drain", damage: 15), armor: new Armor(name: "Shadow Shroud", defense: 5), gold: 75u))
 };
 
-var bosses = new List<Boss>
-{
-    new Boss(name: "Dragon Whelp", level: 1, health: 200, weapon: new Weapon(name: "Flame Breath", damage: 12), armor: new Armor(name: "Scale Hide", defense: 4), gold: 50u),
-    new Boss(name: "Lich Lord", level: 2, health: 260, weapon: new Weapon(name: "Soul Drain", damage: 15), armor: new Armor(name: "Shadow Shroud", defense: 5), gold: 75u)
-};
-
-var town = new Town(jackson, blacksmith, armorer, healersHut, enemiesByLevel, bosses);
+var town = new Town(jackson, blacksmith, armorer, healersHut, levelContents);
 town.Enter();
