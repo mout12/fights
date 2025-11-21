@@ -7,9 +7,16 @@ namespace fights;
 public class SaveGameService
 {
     private readonly string _saveFilePath;
+    private readonly IReadOnlyDictionary<string, IWeapon> _weaponCatalog;
+    private readonly IReadOnlyDictionary<string, IArmor> _armorCatalog;
 
-    public SaveGameService(string? saveFilePath = null)
+    public SaveGameService(
+        IReadOnlyDictionary<string, IWeapon> weaponCatalog,
+        IReadOnlyDictionary<string, IArmor> armorCatalog,
+        string? saveFilePath = null)
     {
+        _weaponCatalog = weaponCatalog ?? throw new ArgumentNullException(nameof(weaponCatalog));
+        _armorCatalog = armorCatalog ?? throw new ArgumentNullException(nameof(armorCatalog));
         _saveFilePath = saveFilePath ?? Path.Combine(AppContext.BaseDirectory, "savegame.txt");
     }
 
@@ -29,9 +36,7 @@ public class SaveGameService
             $"Health={player.Health}",
             $"MaxHealth={player.MaxHealth}",
             $"WeaponName={player.Weapon.Name}",
-            $"WeaponDamage={player.Weapon.Damage}",
             $"ArmorName={player.Armor.Name}",
-            $"ArmorDefense={player.Armor.Defense}",
             $"Gold={player.Gold}"
         };
 
@@ -55,13 +60,11 @@ public class SaveGameService
             var health = GetInt(data, "Health");
             var maxHealth = GetInt(data, "MaxHealth");
             var weaponName = GetString(data, "WeaponName");
-            var weaponDamage = GetInt(data, "WeaponDamage");
             var armorName = GetString(data, "ArmorName");
-            var armorDefense = GetInt(data, "ArmorDefense");
             var gold = GetUint(data, "Gold");
 
-            var weapon = new Weapon(weaponName, weaponDamage);
-            var armor = new Armor(armorName, armorDefense);
+            var weapon = GetWeaponByName(weaponName);
+            var armor = GetArmorByName(armorName);
             var player = new Player(name, level, maxHealth, weapon, armor, gold);
             player.RestoreHealth(health, maxHealth);
 
@@ -121,5 +124,25 @@ public class SaveGameService
         }
 
         return result;
+    }
+
+    private IWeapon GetWeaponByName(string name)
+    {
+        if (!_weaponCatalog.TryGetValue(name, out var weapon))
+        {
+            throw new InvalidDataException($"Unknown weapon '{name}' in save file.");
+        }
+
+        return weapon;
+    }
+
+    private IArmor GetArmorByName(string name)
+    {
+        if (!_armorCatalog.TryGetValue(name, out var armor))
+        {
+            throw new InvalidDataException($"Unknown armor '{name}' in save file.");
+        }
+
+        return armor;
     }
 }
