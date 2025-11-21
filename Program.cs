@@ -2,6 +2,17 @@
 using System.Collections.Generic;
 using fights;
 
+Player CreateNewPlayer()
+{
+    return new Player(
+        name: "Jackson",
+        level: 1,
+        health: 100,
+        weapon: new Weapon(name: "Fists", damage: 1),
+        armor: new Armor(name: "Cloth Shirt", defense: 1),
+        gold: 1000u);
+}
+
 var weaponOffers = new List<(IWeapon weapon, uint cost)>
 {
     (new Weapon(name: "Dagger", damage: 5), 30u),
@@ -18,17 +29,10 @@ var armorOffers = new List<(IArmor armor, uint cost)>
     (new Armor(name: "Plate Mail", defense: 6), 90u)
 };
 
-var jackson = new Player(
-    name: "Jackson",
-    level: 1,
-    health: 100,
-    weapon: new Weapon(name: "Fists", damage: 1),
-    armor: new Armor(name: "Cloth Shirt", defense: 1),
-    gold: 1000u);
-
 var blacksmith = new Blacksmith(weaponOffers);
 var armorer = new Armorer(armorOffers);
 var healersHut = new HealersHut();
+var saveGameService = new SaveGameService();
 
 var levelOneEnemies = new List<Fighter>
 {
@@ -52,5 +56,48 @@ var levelContents = new Dictionary<int, LevelContent>
     [2] = new LevelContent(levelTwoEnemies, new Boss(name: "Lich Lord", level: 2, health: 260, weapon: new Weapon(name: "Soul Drain", damage: 15), armor: new Armor(name: "Shadow Shroud", defense: 5), gold: 75u))
 };
 
-var town = new Town(jackson, blacksmith, armorer, healersHut, levelContents);
-town.Enter();
+var player = InitializePlayer(saveGameService);
+var town = new Town(player, blacksmith, armorer, healersHut, levelContents);
+var leftTownPeacefully = town.Enter();
+
+if (leftTownPeacefully)
+{
+    saveGameService.Save(player);
+    Console.WriteLine("Your progress has been saved.");
+}
+else
+{
+    Console.WriteLine("Progress was not saved.");
+}
+
+Player InitializePlayer(SaveGameService saveService)
+{
+    if (!saveService.HasSave())
+    {
+        return CreateNewPlayer();
+    }
+
+    Console.WriteLine("A previous adventure was found. Choose an option:");
+    Console.WriteLine("1. Start over");
+    Console.WriteLine("2. Load previous adventure");
+    Console.Write("> ");
+
+    var choice = Console.ReadLine()?.Trim();
+    if (choice == "2")
+    {
+        var loadedPlayer = saveService.TryLoad();
+        if (loadedPlayer is not null)
+        {
+            Console.WriteLine("Previous adventure loaded.");
+            return loadedPlayer;
+        }
+
+        Console.WriteLine("Failed to load the previous adventure. Starting fresh.");
+    }
+    else
+    {
+        Console.WriteLine("Starting a new adventure.");
+    }
+
+    return CreateNewPlayer();
+}

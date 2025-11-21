@@ -25,7 +25,7 @@ public class Town
         }
     }
 
-    public void Enter()
+    public bool Enter()
     {
         Console.WriteLine("You arrive at the town square. Where will you go?");
 
@@ -62,19 +62,19 @@ public class Town
                     if (!StartFight())
                     {
                         Console.WriteLine("Your adventure ends here.");
-                        return;
+                        return false;
                     }
                     break;
                 case "5":
                     if (!StartBossFight())
                     {
                         Console.WriteLine("Your adventure ends here.");
-                        return;
+                        return false;
                     }
                     break;
                 case "6":
                     Console.WriteLine("You decide to rest and leave the adventure for another day.");
-                    return;
+                    return true;
                 default:
                     Console.WriteLine("Invalid choice. Please select 1, 2, 3, 4, 5, or 6.");
                     break;

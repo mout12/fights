@@ -69,6 +69,22 @@ public class Fighter : IFighter
         Health = MaxHealth;
     }
 
+    public void RestoreHealth(int currentHealth, int maxHealth)
+    {
+        if (maxHealth <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxHealth), "Max health must be positive.");
+        }
+
+        if (currentHealth < 0 || currentHealth > maxHealth)
+        {
+            throw new ArgumentOutOfRangeException(nameof(currentHealth), "Health must be within 0 and max health.");
+        }
+
+        MaxHealth = maxHealth;
+        Health = currentHealth;
+    }
+
     public void EquipWeapon(IWeapon weapon)
     {
         Weapon = weapon ?? throw new ArgumentNullException(nameof(weapon));
