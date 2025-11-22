@@ -42,10 +42,18 @@ public class Fighter : IFighter
             mitigatedDamage = Math.Max(0, baseDamage - Armor.Defense);
         }
 
-        var updatedHealth = Health - mitigatedDamage;
-        Health = updatedHealth < 0 ? 0 : updatedHealth;
-
+        ApplyDamage(mitigatedDamage);
         return mitigatedDamage;
+    }
+
+    public void TakeSelfDamage(int amount)
+    {
+        if (amount <= 0)
+        {
+            return;
+        }
+
+        ApplyDamage(amount);
     }
 
     public bool TrySpendGold(uint amount)
@@ -93,5 +101,11 @@ public class Fighter : IFighter
     public void EquipArmor(IArmor armor)
     {
         Armor = armor ?? throw new ArgumentNullException(nameof(armor));
+    }
+
+    private void ApplyDamage(int amount)
+    {
+        var updatedHealth = Health - amount;
+        Health = updatedHealth < 0 ? 0 : updatedHealth;
     }
 }

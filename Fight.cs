@@ -48,7 +48,8 @@ public class Fight
         var firstStrikePayload = firstStrikeWeapon.CreateDamagePayload();
         var firstStrikeDealt = _fighterTwo.TakeDamage(firstStrikePayload);
         var firstStrikeSuffix = firstStrikePayload.IsCritical ? " (critical strike!)" : string.Empty;
-        Console.WriteLine($"{_fighterOne.Name} attacks with {firstStrikeWeapon.Name} for {firstStrikeDealt} damage{firstStrikeSuffix}. {_fighterTwo.Name} has {_fighterTwo.Health} health remaining.");
+        var selfDamageSuffix = ApplySelfDamage(_fighterOne, firstStrikePayload);
+        Console.WriteLine($"{_fighterOne.Name} attacks with {firstStrikeWeapon.Name} for {firstStrikeDealt} damage{firstStrikeSuffix}{selfDamageSuffix}. {_fighterTwo.Name} has {_fighterTwo.Health} health remaining.");
 
         if (_fighterTwo.Health <= 0)
         {
@@ -62,11 +63,24 @@ public class Fight
             return true;
         }
 
+        if (_fighterOne.Health <= 0)
+        {
+            Console.WriteLine($"{_fighterOne.Name}'s reckless attack proves fatal!");
+            if (_fighterOne.Gold > 0)
+            {
+                _fighterTwo.GainGold(_fighterOne.Gold);
+                Console.WriteLine($"{_fighterTwo.Name} loots {_fighterOne.Gold} gold.");
+            }
+            Console.WriteLine($"{_fighterTwo.Name} wins!");
+            return true;
+        }
+
         var counterStrikeWeapon = _fighterTwo.Weapon;
         var counterStrikePayload = counterStrikeWeapon.CreateDamagePayload();
         var counterStrikeDealt = _fighterOne.TakeDamage(counterStrikePayload);
         var counterStrikeSuffix = counterStrikePayload.IsCritical ? " (critical strike!)" : string.Empty;
-        Console.WriteLine($"{_fighterTwo.Name} retaliates with {counterStrikeWeapon.Name} for {counterStrikeDealt} damage{counterStrikeSuffix}. {_fighterOne.Name} has {_fighterOne.Health} health remaining.");
+        var counterSelfDamage = ApplySelfDamage(_fighterTwo, counterStrikePayload);
+        Console.WriteLine($"{_fighterTwo.Name} retaliates with {counterStrikeWeapon.Name} for {counterStrikeDealt} damage{counterStrikeSuffix}{counterSelfDamage}. {_fighterOne.Name} has {_fighterOne.Health} health remaining.");
 
         if (_fighterOne.Health <= 0)
         {
@@ -80,7 +94,30 @@ public class Fight
             return true;
         }
 
+        if (_fighterTwo.Health <= 0)
+        {
+            Console.WriteLine($"{_fighterTwo.Name}'s wild swing backfires!");
+            if (_fighterTwo.Gold > 0)
+            {
+                _fighterOne.GainGold(_fighterTwo.Gold);
+                Console.WriteLine($"{_fighterOne.Name} loots {_fighterTwo.Gold} gold.");
+            }
+            Console.WriteLine($"{_fighterOne.Name} wins!");
+            return true;
+        }
+
         return false;
+    }
+
+    private static string ApplySelfDamage(IFighter attacker, IDamagePayload payload)
+    {
+        if (payload.SelfDamage <= 0)
+        {
+            return string.Empty;
+        }
+
+        attacker.TakeSelfDamage(payload.SelfDamage);
+        return $", but takes {payload.SelfDamage} self-damage";
     }
 
     private char ReadChoice()

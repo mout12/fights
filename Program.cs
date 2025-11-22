@@ -5,11 +5,11 @@ using fights;
 var weaponCatalog = new Dictionary<string, IWeapon>(StringComparer.OrdinalIgnoreCase);
 var armorCatalog = new Dictionary<string, IArmor>(StringComparer.OrdinalIgnoreCase);
 
-IWeapon GetOrCreateWeapon(string name, int damage)
+IWeapon GetOrCreateWeapon(string name, int damage, Func<IWeapon>? factory = null)
 {
     if (!weaponCatalog.TryGetValue(name, out var weapon))
     {
-        weapon = new Weapon(name, damage);
+        weapon = factory?.Invoke() ?? new Weapon(name, damage);
         weaponCatalog[name] = weapon;
     }
 
@@ -43,6 +43,7 @@ var weaponOffers = new List<(IWeapon weapon, uint cost)>
     (GetOrCreateWeapon(name: "Dagger", damage: 5), 30u),
     (GetOrCreateWeapon(name: "Short Sword", damage: 7), 55u),
     (GetOrCreateWeapon(name: "War Axe", damage: 9), 80u),
+    (GetOrCreateWeapon(name: "Morningstar Flail", damage: 12, factory: () => new SelfDamagingWeapon(name: "Morningstar Flail", damage: 12, selfDamage: 1)), 110u),
     (GetOrCreateWeapon(name: "Wizard Staff", damage: 11), 100u)
 };
 
