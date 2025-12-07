@@ -30,10 +30,25 @@ public class ConsoleInputSelectionService : IInputSelectionService
             }
 
             Console.Write("> ");
-            var input = Console.ReadLine()?.Trim();
-            if (!int.TryParse(input, out var choice) || choice < 1 || choice > options.Count)
+            var key = Console.ReadKey(intercept: true);
+            Console.WriteLine();
+
+            if (key.Key == ConsoleKey.Escape)
             {
-                Console.WriteLine("Invalid choice. Please enter a number from the list.");
+                Console.WriteLine("Option selection canceled.");
+                continue;
+            }
+
+            if (!char.IsDigit(key.KeyChar))
+            {
+                Console.WriteLine("Invalid choice. Please press a number from the list.");
+                continue;
+            }
+
+            var choice = key.KeyChar - '0';
+            if (choice < 1 || choice > options.Count)
+            {
+                Console.WriteLine("Invalid choice. Please press a number from the list.");
                 continue;
             }
 
