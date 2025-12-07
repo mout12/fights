@@ -16,7 +16,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{60167427-D
 	EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{8AEC27C7-1E75-4C76-99AF-37840C1E39AB}"
 	ProjectSection(SolutionItems) = preProject
+		Services\ConsoleInputSelectionService.cs = Services\ConsoleInputSelectionService.cs
 		Services\DataLoadingService.cs = Services\DataLoadingService.cs
+		Services\IInputSelectionService.cs = Services\IInputSelectionService.cs
 		Services\SaveGameService.cs = Services\SaveGameService.cs
 	EndProjectSection
 EndProject

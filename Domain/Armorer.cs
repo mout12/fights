@@ -7,8 +7,9 @@ namespace fights;
 public class Armorer
 {
     private readonly List<(IArmor Armor, uint Cost)> _armorOffers;
+    private readonly IInputSelectionService _inputSelector;
 
-    public Armorer(IEnumerable<(IArmor armor, uint cost)> armorOffers)
+    public Armorer(IEnumerable<(IArmor armor, uint cost)> armorOffers, IInputSelectionService inputSelector)
     {
         if (armorOffers is null)
         {
@@ -21,6 +22,8 @@ public class Armorer
         {
             throw new ArgumentException("Shop must contain at least one armor offer.", nameof(armorOffers));
         }
+
+        _inputSelector = inputSelector ?? throw new ArgumentNullException(nameof(inputSelector));
     }
 
     public void Enter(Fighter fighter)
@@ -33,46 +36,44 @@ public class Armorer
         Console.WriteLine("Welcome to the armorer's shop!");
         Console.WriteLine($"You've got {fighter.Gold}g to spend. Choose armor to wear into the fight:");
 
-        for (var i = 0; i < _armorOffers.Count; i++)
-        {
-            var (armor, cost) = _armorOffers[i];
-            Console.WriteLine($"{i + 1}. {armor.Name} (Defense: {armor.Defense}) - {cost}g");
-        }
-
+        const string prompt = "Select armor to purchase:";
         while (true)
         {
-            Console.Write("Enter armor number to purchase, 'q' to leave, or press Enter to keep your current armor: ");
-            var input = Console.ReadLine();
-
-            if (string.IsNullOrWhiteSpace(input))
+            var options = new List<InputOption<Func<bool>>>();
+            foreach (var (armor, cost) in _armorOffers)
             {
-                Console.WriteLine($"You keep your {fighter.Armor.Name} and {fighter.Gold}g.");
+                options.Add(new InputOption<Func<bool>>(
+                    $"{armor.Name} (Defense: {armor.Defense}) - {cost}g",
+                    () => TryPurchaseArmor(fighter, armor, cost)));
+            }
+
+            options.Add(new InputOption<Func<bool>>(
+                "Leave without buying anything",
+                () =>
+                {
+                    Console.WriteLine("You leave the armorer without buying anything.");
+                    return false;
+                }));
+
+            var action = _inputSelector.SelectOption(prompt, options);
+            var continueShopping = action();
+            if (!continueShopping)
+            {
                 break;
             }
-
-            if (string.Equals(input.Trim(), "q", StringComparison.OrdinalIgnoreCase))
-            {
-                Console.WriteLine("You leave the armorer without buying anything.");
-                break;
-            }
-
-            if (!int.TryParse(input, out var choice) || choice < 1 || choice > _armorOffers.Count)
-            {
-                Console.WriteLine("Invalid selection. Choose a number from the list.");
-                continue;
-            }
-
-            var (selectedArmor, cost) = _armorOffers[choice - 1];
-
-            if (!fighter.TrySpendGold(cost))
-            {
-                Console.WriteLine("Not enough gold. Pick something cheaper.");
-                continue;
-            }
-
-            fighter.EquipArmor(selectedArmor);
-            Console.WriteLine($"You purchased the {selectedArmor.Name}! Remaining gold: {fighter.Gold}g.");
-            break;
         }
+    }
+
+    private static bool TryPurchaseArmor(Fighter fighter, IArmor armor, uint cost)
+    {
+        if (!fighter.TrySpendGold(cost))
+        {
+            Console.WriteLine("Not enough gold. Pick something cheaper.");
+            return true;
+        }
+
+        fighter.EquipArmor(armor);
+        Console.WriteLine($"You purchased the {armor.Name}! Remaining gold: {fighter.Gold}g.");
+        return false;
     }
 }

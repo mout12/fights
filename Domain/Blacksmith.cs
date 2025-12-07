@@ -7,8 +7,9 @@ namespace fights;
 public class Blacksmith
 {
     private readonly List<(IWeapon Weapon, uint Cost)> _weaponOffers;
+    private readonly IInputSelectionService _inputSelector;
 
-    public Blacksmith(IEnumerable<(IWeapon weapon, uint cost)> weaponOffers)
+    public Blacksmith(IEnumerable<(IWeapon weapon, uint cost)> weaponOffers, IInputSelectionService inputSelector)
     {
         if (weaponOffers is null)
         {
@@ -21,6 +22,8 @@ public class Blacksmith
         {
             throw new ArgumentException("Shop must contain at least one weapon offer.", nameof(weaponOffers));
         }
+
+        _inputSelector = inputSelector ?? throw new ArgumentNullException(nameof(inputSelector));
     }
 
     public void Enter(Fighter fighter)
@@ -33,46 +36,44 @@ public class Blacksmith
         Console.WriteLine("Welcome to the blacksmith's forge!");
         Console.WriteLine($"You've got {fighter.Gold}g to spend. Choose a weapon to take into the fight:");
 
-        for (var i = 0; i < _weaponOffers.Count; i++)
-        {
-            var (weapon, cost) = _weaponOffers[i];
-            Console.WriteLine($"{i + 1}. {weapon.Name} (Damage: {weapon.Damage}) - {cost}g");
-        }
-
+        var description = "Select a weapon to purchase:";
         while (true)
         {
-            Console.Write("Enter weapon number to purchase, 'q' to leave, or press Enter to keep your current weapon: ");
-            var input = Console.ReadLine();
-
-            if (string.IsNullOrWhiteSpace(input))
+            var options = new List<InputOption<Func<bool>>>();
+            foreach (var (weapon, cost) in _weaponOffers)
             {
-                Console.WriteLine($"You keep your {fighter.Weapon.Name} and {fighter.Gold}g.");
+                options.Add(new InputOption<Func<bool>>(
+                    $"{weapon.Name} (Damage: {weapon.Damage}) - {cost}g",
+                    () => TryPurchaseWeapon(fighter, weapon, cost)));
+            }
+
+            options.Add(new InputOption<Func<bool>>(
+                "Leave without buying anything",
+                () =>
+                {
+                    Console.WriteLine("You leave the blacksmith without buying anything.");
+                    return false;
+                }));
+
+            var action = _inputSelector.SelectOption(description, options);
+            var continueShopping = action();
+            if (!continueShopping)
+            {
                 break;
             }
-
-            if (string.Equals(input.Trim(), "q", StringComparison.OrdinalIgnoreCase))
-            {
-                Console.WriteLine("You leave the blacksmith without buying anything.");
-                break;
-            }
-
-            if (!int.TryParse(input, out var choice) || choice < 1 || choice > _weaponOffers.Count)
-            {
-                Console.WriteLine("Invalid selection. Choose a number from the list.");
-                continue;
-            }
-
-            var (selectedWeapon, cost) = _weaponOffers[choice - 1];
-
-            if (!fighter.TrySpendGold(cost))
-            {
-                Console.WriteLine("Not enough gold. Pick something cheaper.");
-                continue;
-            }
-
-            fighter.EquipWeapon(selectedWeapon);
-            Console.WriteLine($"You purchased the {selectedWeapon.Name}! Remaining gold: {fighter.Gold}g.");
-            break;
         }
+    }
+
+    private static bool TryPurchaseWeapon(Fighter fighter, IWeapon weapon, uint cost)
+    {
+        if (!fighter.TrySpendGold(cost))
+        {
+            Console.WriteLine("Not enough gold. Pick something cheaper.");
+            return true;
+        }
+
+        fighter.EquipWeapon(weapon);
+        Console.WriteLine($"You purchased the {weapon.Name}! Remaining gold: {fighter.Gold}g.");
+        return false;
     }
 }

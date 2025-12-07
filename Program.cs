@@ -39,6 +39,7 @@ IArmor GetArmor(string name)
 }
 
 var dataLoader = new DataLoadingService();
+var inputSelector = new ConsoleInputSelectionService();
 
 var weaponDataPath = Path.Combine(AppContext.BaseDirectory, "Data", "Weapons.txt");
 foreach (var weapon in dataLoader.LoadWeapons(weaponDataPath))
@@ -65,9 +66,9 @@ Player CreateNewPlayer()
     return dataLoader.LoadPlayerTemplate(newGamePath, GetWeapon, GetArmor);
 }
 
-var blacksmith = new Blacksmith(weaponOffers);
-var armorer = new Armorer(armorOffers);
-var healersHut = new HealersHut();
+var blacksmith = new Blacksmith(weaponOffers, inputSelector);
+var armorer = new Armorer(armorOffers, inputSelector);
+var healersHut = new HealersHut(inputSelector);
 var saveGameService = new SaveGameService(weaponCatalog, armorCatalog);
 
 var levelContents = new Dictionary<int, LevelContent>(levelSetups.Count);
@@ -77,7 +78,7 @@ foreach (var setup in levelSetups)
 }
 
 var player = InitializePlayer(saveGameService);
-var town = new Town(player, blacksmith, armorer, healersHut, levelContents);
+var town = new Town(player, blacksmith, armorer, healersHut, levelContents, inputSelector);
 var leftTownPeacefully = town.Enter();
 
 if (leftTownPeacefully)
@@ -94,30 +95,34 @@ Player InitializePlayer(SaveGameService saveService)
 {
     if (!saveService.HasSave())
     {
+        Console.WriteLine("Starting a new adventure.");
         return CreateNewPlayer();
     }
 
-    Console.WriteLine("A previous adventure was found. Choose an option:");
-    Console.WriteLine("1. Start over");
-    Console.WriteLine("2. Load previous adventure");
-    Console.Write("> ");
-
-    var choice = Console.ReadLine()?.Trim();
-    if (choice == "2")
+    var selection = inputSelector.SelectOption("A previous adventure was found. Choose an option:", new[]
     {
-        var loadedPlayer = saveService.TryLoad();
-        if (loadedPlayer is not null)
-        {
-            Console.WriteLine("Previous adventure loaded.");
-            return loadedPlayer;
-        }
+        new InputOption<Func<Player>>(
+            "Start over",
+            () =>
+            {
+                Console.WriteLine("Starting a new adventure.");
+                return CreateNewPlayer();
+            }),
+        new InputOption<Func<Player>>(
+            "Load previous adventure",
+            () =>
+            {
+                var loadedPlayer = saveService.TryLoad();
+                if (loadedPlayer is not null)
+                {
+                    Console.WriteLine("Previous adventure loaded.");
+                    return loadedPlayer;
+                }
 
-        Console.WriteLine("Failed to load the previous adventure. Starting fresh.");
-    }
-    else
-    {
-        Console.WriteLine("Starting a new adventure.");
-    }
+                Console.WriteLine("Failed to load the previous adventure. Starting fresh.");
+                return CreateNewPlayer();
+            })
+    });
 
-    return CreateNewPlayer();
+    return selection();
 }

@@ -5,6 +5,12 @@ namespace fights;
 public class HealersHut
 {
     private const uint HealCost = 100u;
+    private readonly IInputSelectionService _inputSelector;
+
+    public HealersHut(IInputSelectionService inputSelector)
+    {
+        _inputSelector = inputSelector ?? throw new ArgumentNullException(nameof(inputSelector));
+    }
 
     public void Enter(Fighter fighter)
     {
@@ -23,22 +29,27 @@ public class HealersHut
             return;
         }
 
-        Console.Write("Pay for a full heal? (y/n): ");
-        var response = Console.ReadLine()?.Trim().ToLowerInvariant();
-        if (response is not "y" and not "yes")
+        var choice = _inputSelector.SelectOption("What will you do?", new[]
         {
-            Console.WriteLine("You leave without seeking the healer's aid.");
-            return;
-        }
+            new InputOption<Action>(
+                $"Pay {HealCost}g for a full heal",
+                () =>
+                {
+                    if (!fighter.TrySpendGold(HealCost))
+                    {
+                        Console.WriteLine("You don't have enough gold. The healer shakes their head apologetically.");
+                        return;
+                    }
 
-        if (!fighter.TrySpendGold(HealCost))
-        {
-            Console.WriteLine("You don't have enough gold. The healer shakes their head apologetically.");
-            return;
-        }
+                    fighter.HealToFull();
+                    Console.WriteLine("Warm light surrounds you as your wounds knit together. You're fully healed!");
+                    Console.WriteLine($"Gold remaining: {fighter.Gold}g. Health: {fighter.Health}/{fighter.MaxHealth}.");
+                }),
+            new InputOption<Action>(
+                "Leave without healing",
+                () => Console.WriteLine("You leave without seeking the healer's aid."))
+        });
 
-        fighter.HealToFull();
-        Console.WriteLine("Warm light surrounds you as your wounds knit together. You're fully healed!");
-        Console.WriteLine($"Gold remaining: {fighter.Gold}g. Health: {fighter.Health}/{fighter.MaxHealth}.");
+        choice();
     }
 }

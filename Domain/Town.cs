@@ -10,14 +10,22 @@ public class Town
     private readonly Armorer _armorer;
     private readonly HealersHut _healersHut;
     private readonly Dictionary<int, LevelContent> _levels;
+    private readonly IInputSelectionService _inputSelector;
 
-    public Town(Player player, Blacksmith blacksmith, Armorer armorer, HealersHut healersHut, Dictionary<int, LevelContent> levels)
+    public Town(
+        Player player,
+        Blacksmith blacksmith,
+        Armorer armorer,
+        HealersHut healersHut,
+        Dictionary<int, LevelContent> levels,
+        IInputSelectionService inputSelector)
     {
         _player = player ?? throw new ArgumentNullException(nameof(player));
         _blacksmith = blacksmith ?? throw new ArgumentNullException(nameof(blacksmith));
         _armorer = armorer ?? throw new ArgumentNullException(nameof(armorer));
         _healersHut = healersHut ?? throw new ArgumentNullException(nameof(healersHut));
         _levels = levels ?? throw new ArgumentNullException(nameof(levels));
+        _inputSelector = inputSelector ?? throw new ArgumentNullException(nameof(inputSelector));
 
         if (_levels.Count == 0)
         {
@@ -33,51 +41,36 @@ public class Town
         {
             Console.WriteLine();
             Console.WriteLine($"Status: Level={_player.Level} | Weapon={_player.Weapon.Name} | Armor={_player.Armor.Name} | Gold={_player.Gold}g | Health={_player.Health}/{_player.MaxHealth}");
-            Console.WriteLine("1. Visit the blacksmith");
-            Console.WriteLine("2. Visit the armorer");
-            Console.WriteLine("3. Visit the healer's hut");
-            Console.WriteLine("4. Venture out and fight");
             var currentBoss = _levels.TryGetValue(_player.Level, out var level) ? level.Boss : null;
-            var bossOption = currentBoss is null
-                ? "5. Challenge the boss (none available for your level)"
-                : $"5. Challenge the boss: {currentBoss.Name} (Level {currentBoss.Level})";
-            Console.WriteLine(bossOption);
-            Console.WriteLine("6. Leave town");
-            Console.Write("> ");
+            var bossDescription = currentBoss is null
+                ? "Challenge the boss (none available for your level)"
+                : $"Challenge the boss: {currentBoss.Name} (Level {currentBoss.Level})";
 
-            var choice = Console.ReadLine()?.Trim();
-
-            switch (choice)
+            var options = new[]
             {
-                case "1":
-                    _blacksmith.Enter(_player);
-                    break;
-                case "2":
-                    _armorer.Enter(_player);
-                    break;
-                case "3":
-                    _healersHut.Enter(_player);
-                    break;
-                case "4":
-                    if (!StartFight())
-                    {
-                        Console.WriteLine("Your adventure ends here.");
-                        return false;
-                    }
-                    break;
-                case "5":
-                    if (!StartBossFight())
-                    {
-                        Console.WriteLine("Your adventure ends here.");
-                        return false;
-                    }
-                    break;
-                case "6":
+                new InputOption<Func<TownLoopResult>>("Visit the blacksmith", () => { _blacksmith.Enter(_player); return TownLoopResult.Continue; }),
+                new InputOption<Func<TownLoopResult>>("Visit the armorer", () => { _armorer.Enter(_player); return TownLoopResult.Continue; }),
+                new InputOption<Func<TownLoopResult>>("Visit the healer's hut", () => { _healersHut.Enter(_player); return TownLoopResult.Continue; }),
+                new InputOption<Func<TownLoopResult>>("Venture out and fight", () => StartFight() ? TownLoopResult.Continue : TownLoopResult.AdventureEnded),
+                new InputOption<Func<TownLoopResult>>(bossDescription, () => StartBossFight() ? TownLoopResult.Continue : TownLoopResult.AdventureEnded),
+                new InputOption<Func<TownLoopResult>>("Leave town", () =>
+                {
                     Console.WriteLine("You decide to rest and leave the adventure for another day.");
-                    return true;
-                default:
-                    Console.WriteLine("Invalid choice. Please select 1, 2, 3, 4, 5, or 6.");
-                    break;
+                    return TownLoopResult.LeftTown;
+                })
+            };
+
+            var action = _inputSelector.SelectOption("Where will you go?", options);
+            var result = action();
+            if (result == TownLoopResult.LeftTown)
+            {
+                return true;
+            }
+
+            if (result == TownLoopResult.AdventureEnded)
+            {
+                Console.WriteLine("Your adventure ends here.");
+                return false;
             }
         }
     }
@@ -123,5 +116,12 @@ public class Town
         }
 
         return playerSurvived;
+    }
+
+    private enum TownLoopResult
+    {
+        Continue,
+        AdventureEnded,
+        LeftTown
     }
 }
