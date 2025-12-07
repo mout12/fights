@@ -197,12 +197,58 @@ List<(IWeapon weapon, uint cost)> LoadBlacksmithOffers(string filePath)
     return offers;
 }
 
+List<(IArmor armor, uint cost)> LoadArmorerOffers(string filePath)
+{
+    var fullPath = Path.GetFullPath(filePath);
+    if (!File.Exists(fullPath))
+    {
+        throw new FileNotFoundException($"Armorer data file '{fullPath}' was not found.");
+    }
+
+    var offers = new List<(IArmor armor, uint cost)>();
+    foreach (var line in FilterDataLines(File.ReadLines(fullPath)))
+    {
+        var parts = line.Split(',', 2, StringSplitOptions.TrimEntries);
+        if (parts.Length != 2)
+        {
+            Console.WriteLine($"Skipping invalid armorer offer: '{line}'");
+            continue;
+        }
+
+        var armorName = parts[0];
+        if (string.IsNullOrWhiteSpace(armorName))
+        {
+            Console.WriteLine($"Skipping armorer offer with no armor name: '{line}'");
+            continue;
+        }
+
+        if (!uint.TryParse(parts[1], out var cost))
+        {
+            Console.WriteLine($"Skipping armorer offer for '{armorName}' with invalid cost: '{parts[1]}'");
+            continue;
+        }
+
+        try
+        {
+            offers.Add((GetArmor(armorName), cost));
+        }
+        catch (InvalidOperationException)
+        {
+            Console.WriteLine($"Skipping armorer offer because armor '{armorName}' is not registered.");
+        }
+    }
+
+    return offers;
+}
+
 var weaponDataPath = Path.Combine(AppContext.BaseDirectory, "Data", "Weapons.txt");
 LoadWeaponsFromFile(weaponDataPath);
 var armorDataPath = Path.Combine(AppContext.BaseDirectory, "Data", "Armor.txt");
 LoadArmorsFromFile(armorDataPath);
 var blacksmithDataPath = Path.Combine(AppContext.BaseDirectory, "Data", "Blacksmith.txt");
 var weaponOffers = LoadBlacksmithOffers(blacksmithDataPath);
+var armorerDataPath = Path.Combine(AppContext.BaseDirectory, "Data", "Armorer.txt");
+var armorOffers = LoadArmorerOffers(armorerDataPath);
 
 Player CreateNewPlayer()
 {
@@ -214,14 +260,6 @@ Player CreateNewPlayer()
         armor: GetArmor("Cloth Shirt"),
         gold: 1000u);
 }
-
-var armorOffers = new List<(IArmor armor, uint cost)>
-{
-    (GetArmor("Padded Vest"), 35u),
-    (GetArmor("Chain Shirt"), 60u),
-    (GetArmor("Enchanted Robes"), 75u),
-    (GetArmor("Plate Mail"), 90u)
-};
 
 var blacksmith = new Blacksmith(weaponOffers);
 var armorer = new Armorer(armorOffers);

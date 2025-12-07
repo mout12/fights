@@ -1,0 +1,6 @@
+# Armorer offers format:
+# ArmorName,Cost
+Padded Vest,35
+Chain Shirt,60
+Enchanted Robes,75
+Plate Mail,90
