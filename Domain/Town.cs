@@ -43,16 +43,16 @@ public class Town
             Console.WriteLine($"Status: Level={_player.Level} | Weapon={_player.Weapon.Name} | Armor={_player.Armor.Name} | Gold={_player.Gold}g | Health={_player.Health}/{_player.MaxHealth}");
             var currentBoss = _levels.TryGetValue(_player.Level, out var level) ? level.Boss : null;
             var bossDescription = currentBoss is null
-                ? "Challenge the boss (none available for your level)"
-                : $"Challenge the boss: {currentBoss.Name} (Level {currentBoss.Level})";
+                ? "[C]hallenge the boss (none available for your level)"
+                : $"[C]hallenge the boss: {currentBoss.Name} (Level {currentBoss.Level})";
 
             var options = new[]
             {
-                new InputOption<Func<TownLoopResult>>("Visit the blacksmith", () => { _blacksmith.Enter(_player); return TownLoopResult.Continue; }),
-                new InputOption<Func<TownLoopResult>>("Visit the armorer", () => { _armorer.Enter(_player); return TownLoopResult.Continue; }),
-                new InputOption<Func<TownLoopResult>>("Visit the healer's hut", () => { _healersHut.Enter(_player); return TownLoopResult.Continue; }),
-                new InputOption<Func<TownLoopResult>>("Venture out and fight", () => StartFight() ? TownLoopResult.Continue : TownLoopResult.AdventureEnded),
-                new InputOption<Func<TownLoopResult>>(bossDescription, () => StartBossFight() ? TownLoopResult.Continue : TownLoopResult.AdventureEnded),
+                new InputOption<Func<TownLoopResult>>("Visit the [B]lacksmith", () => { _blacksmith.Enter(_player); return TownLoopResult.Continue; }, Hotkey: 'b'),
+                new InputOption<Func<TownLoopResult>>("Visit the [A]rmorer", () => { _armorer.Enter(_player); return TownLoopResult.Continue; }, Hotkey: 'a'),
+                new InputOption<Func<TownLoopResult>>("Visit the [H]ealer's hut", () => { _healersHut.Enter(_player); return TownLoopResult.Continue; }, Hotkey: 'h'),
+                new InputOption<Func<TownLoopResult>>("Venture out and [F]ight", () => StartFight() ? TownLoopResult.Continue : TownLoopResult.AdventureEnded, Hotkey: 'f'),
+                new InputOption<Func<TownLoopResult>>(bossDescription, () => StartBossFight() ? TownLoopResult.Continue : TownLoopResult.AdventureEnded, Hotkey: 'c'),
                 new InputOption<Func<TownLoopResult>>("[Q]uit to fields", () => ConfirmQuit(), Hotkey: 'q')
             };
 
