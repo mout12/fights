@@ -38,32 +38,71 @@ IArmor GetArmor(string name)
     return armor;
 }
 
-void RegisterWeapons()
+void LoadWeaponsFromFile(string filePath)
 {
-    var weapons = new IWeapon[]
+    var fullPath = Path.GetFullPath(filePath);
+    if (!File.Exists(fullPath))
     {
-        new Weapon(name: "Fists", damage: 1),
-        new Weapon(name: "Stick", damage: 1),
-        new Weapon(name: "Dagger", damage: 5),
-        new Weapon(name: "Short Sword", damage: 7),
-        new Weapon(name: "War Axe", damage: 9),
-        new SelfDamagingWeapon(name: "Morningstar Flail", damage: 12, selfDamage: 1),
-        new Weapon(name: "Wizard Staff", damage: 11),
-        new Weapon(name: "Rusty Blade", damage: 4),
-        new Weapon(name: "Fangs", damage: 5),
-        new Weapon(name: "Shiv", damage: 6),
-        new Weapon(name: "Heavy Club", damage: 7),
-        new Weapon(name: "Ancient Sword", damage: 6),
-        new Weapon(name: "Shadow Bow", damage: 8),
-        new Weapon(name: "Stone Hammer", damage: 9),
-        new Weapon(name: "Flame Breath", damage: 12),
-        new Weapon(name: "Soul Drain", damage: 15)
-    };
-
-    foreach (var weapon in weapons)
-    {
-        RegisterWeapon(weapon);
+        throw new FileNotFoundException($"Weapon data file '{fullPath}' was not found.");
     }
+
+    foreach (var line in FilterDataLines(File.ReadLines(fullPath)))
+    {
+        var parts = line.Split(',', StringSplitOptions.TrimEntries);
+        if (parts.Length < 3)
+        {
+            Console.WriteLine($"Skipping invalid weapon entry: '{line}'");
+            continue;
+        }
+
+        var type = parts[0];
+        var name = parts[1];
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            Console.WriteLine($"Skipping weapon entry with no name: '{line}'");
+            continue;
+        }
+
+        if (!int.TryParse(parts[2], out var damage))
+        {
+            Console.WriteLine($"Skipping weapon '{name}' with invalid damage: '{parts[2]}'");
+            continue;
+        }
+
+        var weapon = CreateWeaponFromParts(type, name, damage, parts);
+        if (weapon is not null)
+        {
+            RegisterWeapon(weapon);
+        }
+    }
+}
+
+IWeapon? CreateWeaponFromParts(string type, string name, int damage, string[] parts)
+{
+    if (type.Equals(nameof(Weapon), StringComparison.OrdinalIgnoreCase))
+    {
+        return new Weapon(name, damage);
+    }
+
+    if (type.Equals(nameof(SelfDamagingWeapon), StringComparison.OrdinalIgnoreCase))
+    {
+        if (parts.Length < 4)
+        {
+            Console.WriteLine($"Skipping self damaging weapon '{name}' because self damage is missing.");
+            return null;
+        }
+
+        if (!int.TryParse(parts[3], out var selfDamage))
+        {
+            Console.WriteLine($"Skipping self damaging weapon '{name}' with invalid self damage: '{parts[3]}'");
+            return null;
+        }
+
+        return new SelfDamagingWeapon(name, damage, selfDamage);
+    }
+
+    Console.WriteLine($"Skipping weapon '{name}' with unknown type '{type}'.");
+    return null;
 }
 
 void LoadArmorsFromFile(string filePath)
@@ -74,7 +113,7 @@ void LoadArmorsFromFile(string filePath)
         throw new FileNotFoundException($"Armor data file '{fullPath}' was not found.");
     }
 
-    foreach (var line in FilterArmorLines(File.ReadLines(fullPath)))
+    foreach (var line in FilterDataLines(File.ReadLines(fullPath)))
     {
         var parts = line.Split(',', 2, StringSplitOptions.TrimEntries);
         if (parts.Length != 2)
@@ -100,7 +139,7 @@ void LoadArmorsFromFile(string filePath)
     }
 }
 
-IEnumerable<string> FilterArmorLines(IEnumerable<string> lines)
+IEnumerable<string> FilterDataLines(IEnumerable<string> lines)
 {
     foreach (var line in lines)
     {
@@ -114,7 +153,8 @@ IEnumerable<string> FilterArmorLines(IEnumerable<string> lines)
     }
 }
 
-RegisterWeapons();
+var weaponDataPath = Path.Combine(AppContext.BaseDirectory, "Data", "Weapons.txt");
+LoadWeaponsFromFile(weaponDataPath);
 var armorDataPath = Path.Combine(AppContext.BaseDirectory, "Data", "Armor.txt");
 LoadArmorsFromFile(armorDataPath);
 

@@ -1,0 +1,18 @@
+# Weapon catalog format:
+# WeaponType,Name,Damage[,SelfDamage]
+Weapon,Fists,1
+Weapon,Stick,1
+Weapon,Dagger,5
+Weapon,Short Sword,7
+Weapon,War Axe,9
+SelfDamagingWeapon,Morningstar Flail,12,1
+Weapon,Wizard Staff,11
+Weapon,Rusty Blade,4
+Weapon,Fangs,5
+Weapon,Shiv,6
+Weapon,Heavy Club,7
+Weapon,Ancient Sword,6
+Weapon,Shadow Bow,8
+Weapon,Stone Hammer,9
+Weapon,Flame Breath,12
+Weapon,Soul Drain,15
