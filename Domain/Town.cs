@@ -57,7 +57,7 @@ public class Town
                 {
                     Console.WriteLine("You decide to rest and leave the adventure for another day.");
                     return TownLoopResult.LeftTown;
-                })
+                }, Hotkey: 'q')
             };
 
             var action = _inputSelector.SelectOption("Where will you go?", options);

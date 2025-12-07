@@ -17,6 +17,8 @@ public class ConsoleInputSelectionService : IInputSelectionService
             throw new ArgumentException("At least one option must be provided.", nameof(options));
         }
 
+        var entries = BuildEntries(options);
+
         while (true)
         {
             if (!string.IsNullOrWhiteSpace(prompt))
@@ -24,36 +26,67 @@ public class ConsoleInputSelectionService : IInputSelectionService
                 Console.WriteLine(prompt);
             }
 
-            for (var i = 0; i < options.Count; i++)
+            foreach (var entry in entries)
             {
-                Console.WriteLine($"{i + 1}. {options[i].Description}");
+                Console.WriteLine($"{entry.DisplayLabel}. {entry.Option.Description}");
             }
 
             Console.Write("> ");
             var key = Console.ReadKey(intercept: true);
             Console.WriteLine();
 
-            if (key.Key == ConsoleKey.Escape)
+            var selected = FindMatch(entries, key.KeyChar);
+            if (selected is null)
             {
-                Console.WriteLine("Option selection canceled.");
-                continue;
-            }
-
-            if (!char.IsDigit(key.KeyChar))
-            {
-                Console.WriteLine("Invalid choice. Please press a number from the list.");
-                continue;
-            }
-
-            var choice = key.KeyChar - '0';
-            if (choice < 1 || choice > options.Count)
-            {
-                Console.WriteLine("Invalid choice. Please press a number from the list.");
+                Console.WriteLine("Invalid choice. Please press the number or hotkey for an option.");
                 continue;
             }
 
             Console.WriteLine();
-            return options[choice - 1].Value;
+            return selected.Value;
         }
     }
+
+    private static List<SelectionEntry<T>> BuildEntries<T>(IReadOnlyList<InputOption<T>> options)
+    {
+        var entries = new List<SelectionEntry<T>>(options.Count);
+        var number = 1;
+
+        foreach (var option in options)
+        {
+            var label = number.ToString();
+            entries.Add(new SelectionEntry<T>(option, label, number));
+            number++;
+        }
+
+        return entries;
+    }
+
+    private static InputOption<T>? FindMatch<T>(IEnumerable<SelectionEntry<T>> entries, char input)
+    {
+        if (char.IsDigit(input))
+        {
+            var numericValue = input - '0';
+            foreach (var entry in entries)
+            {
+                if (entry.NumberLabel == numericValue)
+                {
+                    return entry.Option;
+                }
+            }
+        }
+
+        var normalized = char.ToUpperInvariant(input);
+        foreach (var entry in entries)
+        {
+            if (entry.Option.Hotkey.HasValue && char.ToUpperInvariant(entry.Option.Hotkey.Value) == normalized)
+            {
+                return entry.Option;
+            }
+        }
+
+        return null;
+    }
+
+    private sealed record SelectionEntry<T>(InputOption<T> Option, string DisplayLabel, int NumberLabel);
 }
