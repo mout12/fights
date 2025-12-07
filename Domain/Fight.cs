@@ -6,38 +6,47 @@ public class Fight
 {
     private readonly IFighter _fighterOne;
     private readonly IFighter _fighterTwo;
+    private readonly IInputSelectionService _inputSelector;
 
-    public Fight(IFighter fighterOne, IFighter fighterTwo)
+    public Fight(IFighter fighterOne, IFighter fighterTwo, IInputSelectionService inputSelector)
     {
         _fighterOne = fighterOne;
         _fighterTwo = fighterTwo;
+        _inputSelector = inputSelector ?? throw new ArgumentNullException(nameof(inputSelector));
     }
 
     public bool Start()
     {
         Console.WriteLine($"A fight begins between {_fighterOne.Name} and {_fighterTwo.Name}!");
-        Console.WriteLine($"Press 'a' to attack or 'r' to run.");
+        Console.WriteLine("Press the highlighted key for your action.");
 
         while (true)
         {
-            Console.Write("> ");
-            var choice = ReadChoice();
+            var action = _inputSelector.SelectOption(
+                "Choose your action:",
+                new[]
+                {
+                    new InputOption<Func<bool>>("[A]ttack", () =>
+                    {
+                        var finished = ExecuteTurn();
+                        return finished;
+                    }, Hotkey: 'a'),
+                    new InputOption<Func<bool>>("[R]un Away", () =>
+                    {
+                        Console.WriteLine($"{_fighterOne.Name} decides to live another day.");
+                        return true;
+                    }, Hotkey: 'r')
+                });
 
-            if (choice == 'r')
-            {
-                Console.WriteLine($"{_fighterOne.Name} decides to live another day.");
-                return true;
-            }
-
-            if (choice != 'a')
-            {
-                Console.WriteLine("Invalid choice. Press 'a' to attack or 'r' to run.");
-                continue;
-            }
-
-            if (ExecuteTurn())
+            var actionResult = action();
+            if (actionResult)
             {
                 return _fighterOne.Health > 0;
+            }
+
+            if (_fighterOne.Health <= 0)
+            {
+                return false;
             }
         }
     }
@@ -118,30 +127,5 @@ public class Fight
 
         attacker.TakeSelfDamage(payload.SelfDamage);
         return $", but takes {payload.SelfDamage} self-damage";
-    }
-
-    private char ReadChoice()
-    {
-        try
-        {
-            if (!Console.IsInputRedirected)
-            {
-                var key = Console.ReadKey(intercept: true);
-                Console.WriteLine(); // move to next line after key press
-                return char.ToLowerInvariant(key.KeyChar);
-            }
-        }
-        catch (InvalidOperationException)
-        {
-            // fall through to ReadLine below if ReadKey isn't available
-        }
-
-        var line = Console.ReadLine();
-        if (string.IsNullOrWhiteSpace(line))
-        {
-            return '\0';
-        }
-
-        return char.ToLowerInvariant(line.Trim()[0]);
     }
 }

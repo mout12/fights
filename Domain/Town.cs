@@ -103,7 +103,7 @@ public class Town
         var enemy = level.Enemies[Random.Shared.Next(level.Enemies.Count)];
         Console.WriteLine($"A wild {enemy.Name} appears! Prepare for battle.");
 
-        var fight = new Fight(_player, enemy);
+        var fight = new Fight(_player, enemy, _inputSelector);
         return fight.Start();
     }
 
@@ -123,7 +123,7 @@ public class Town
         }
 
         Console.WriteLine($"You challenge the boss of level {_player.Level}: {boss.Name}!");
-        var fight = new Fight(_player, boss);
+        var fight = new Fight(_player, boss, _inputSelector);
         var playerSurvived = fight.Start();
 
         if (playerSurvived && boss.Health <= 0)
