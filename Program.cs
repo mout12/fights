@@ -153,10 +153,56 @@ IEnumerable<string> FilterDataLines(IEnumerable<string> lines)
     }
 }
 
+List<(IWeapon weapon, uint cost)> LoadBlacksmithOffers(string filePath)
+{
+    var fullPath = Path.GetFullPath(filePath);
+    if (!File.Exists(fullPath))
+    {
+        throw new FileNotFoundException($"Blacksmith data file '{fullPath}' was not found.");
+    }
+
+    var offers = new List<(IWeapon weapon, uint cost)>();
+    foreach (var line in FilterDataLines(File.ReadLines(fullPath)))
+    {
+        var parts = line.Split(',', 2, StringSplitOptions.TrimEntries);
+        if (parts.Length != 2)
+        {
+            Console.WriteLine($"Skipping invalid blacksmith offer: '{line}'");
+            continue;
+        }
+
+        var weaponName = parts[0];
+        if (string.IsNullOrWhiteSpace(weaponName))
+        {
+            Console.WriteLine($"Skipping blacksmith offer with no weapon name: '{line}'");
+            continue;
+        }
+
+        if (!uint.TryParse(parts[1], out var cost))
+        {
+            Console.WriteLine($"Skipping blacksmith offer for '{weaponName}' with invalid cost: '{parts[1]}'");
+            continue;
+        }
+
+        try
+        {
+            offers.Add((GetWeapon(weaponName), cost));
+        }
+        catch (InvalidOperationException)
+        {
+            Console.WriteLine($"Skipping blacksmith offer because weapon '{weaponName}' is not registered.");
+        }
+    }
+
+    return offers;
+}
+
 var weaponDataPath = Path.Combine(AppContext.BaseDirectory, "Data", "Weapons.txt");
 LoadWeaponsFromFile(weaponDataPath);
 var armorDataPath = Path.Combine(AppContext.BaseDirectory, "Data", "Armor.txt");
 LoadArmorsFromFile(armorDataPath);
+var blacksmithDataPath = Path.Combine(AppContext.BaseDirectory, "Data", "Blacksmith.txt");
+var weaponOffers = LoadBlacksmithOffers(blacksmithDataPath);
 
 Player CreateNewPlayer()
 {
@@ -168,15 +214,6 @@ Player CreateNewPlayer()
         armor: GetArmor("Cloth Shirt"),
         gold: 1000u);
 }
-
-var weaponOffers = new List<(IWeapon weapon, uint cost)>
-{
-    (GetWeapon("Dagger"), 30u),
-    (GetWeapon("Short Sword"), 55u),
-    (GetWeapon("War Axe"), 80u),
-    (GetWeapon("Morningstar Flail"), 110u),
-    (GetWeapon("Wizard Staff"), 100u)
-};
 
 var armorOffers = new List<(IArmor armor, uint cost)>
 {

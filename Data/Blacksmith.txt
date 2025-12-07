@@ -1,0 +1,7 @@
+# Blacksmith offers format:
+# WeaponName,Cost
+Dagger,30
+Short Sword,55
+War Axe,80
+Morningstar Flail,110
+Wizard Staff,100

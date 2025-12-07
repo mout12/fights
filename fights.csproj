@@ -16,6 +16,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>Data\Weapons.txt</TargetPath>
     </None>
+    <None Include="Data/Blacksmith.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>Data\Blacksmith.txt</TargetPath>
+    </None>
   </ItemGroup>
 
 </Project>
