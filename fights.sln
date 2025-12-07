@@ -20,6 +20,33 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{8A
 		Services\SaveGameService.cs = Services\SaveGameService.cs
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Contracts", "Contracts", "{141DD4FA-6EFF-4B28-B5B9-1F176C736504}"
+	ProjectSection(SolutionItems) = preProject
+		Contracts\IArmor.cs = Contracts\IArmor.cs
+		Contracts\IDamagePayload.cs = Contracts\IDamagePayload.cs
+		Contracts\IFighter.cs = Contracts\IFighter.cs
+		Contracts\ILevel.cs = Contracts\ILevel.cs
+		Contracts\IWeapon.cs = Contracts\IWeapon.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{D6138EAA-68F4-4A0E-A237-47AADFAE74B4}"
+	ProjectSection(SolutionItems) = preProject
+		Domain\Armor.cs = Domain\Armor.cs
+		Domain\Armorer.cs = Domain\Armorer.cs
+		Domain\Blacksmith.cs = Domain\Blacksmith.cs
+		Domain\Boss.cs = Domain\Boss.cs
+		Domain\DamagePayload.cs = Domain\DamagePayload.cs
+		Domain\Fight.cs = Domain\Fight.cs
+		Domain\Fighter.cs = Domain\Fighter.cs
+		Domain\HealersHut.cs = Domain\HealersHut.cs
+		Domain\LevelContent.cs = Domain\LevelContent.cs
+		Domain\LevelSetup.cs = Domain\LevelSetup.cs
+		Domain\Player.cs = Domain\Player.cs
+		Domain\SelfDamagingWeapon.cs = Domain\SelfDamagingWeapon.cs
+		Domain\Town.cs = Domain\Town.cs
+		Domain\Weapon.cs = Domain\Weapon.cs
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
