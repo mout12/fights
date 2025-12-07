@@ -59,6 +59,7 @@ public class Armorer
             var continueShopping = action();
             if (!continueShopping)
             {
+                PauseBeforeLeaving();
                 break;
             }
         }
@@ -75,5 +76,12 @@ public class Armorer
         fighter.EquipArmor(armor);
         Console.WriteLine($"You purchased the {armor.Name}! Remaining gold: {fighter.Gold}g.");
         return false;
+    }
+
+    private static void PauseBeforeLeaving()
+    {
+        Console.WriteLine("Press any key to return to town...");
+        Console.ReadKey(intercept: true);
+        Console.WriteLine();
     }
 }

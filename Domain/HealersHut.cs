@@ -26,6 +26,7 @@ public class HealersHut
         if (fighter.Health >= fighter.MaxHealth)
         {
             Console.WriteLine("You're already at full strength. No healing needed today.");
+            PauseBeforeLeaving();
             return;
         }
 
@@ -38,18 +39,31 @@ public class HealersHut
                     if (!fighter.TrySpendGold(HealCost))
                     {
                         Console.WriteLine("You don't have enough gold. The healer shakes their head apologetically.");
+                        PauseBeforeLeaving();
                         return;
                     }
 
                     fighter.HealToFull();
                     Console.WriteLine("Warm light surrounds you as your wounds knit together. You're fully healed!");
                     Console.WriteLine($"Gold remaining: {fighter.Gold}g. Health: {fighter.Health}/{fighter.MaxHealth}.");
+                    PauseBeforeLeaving();
                 }),
             new InputOption<Action>(
                 "Leave without healing",
-                () => Console.WriteLine("You leave without seeking the healer's aid."))
+                () =>
+                {
+                    Console.WriteLine("You leave without seeking the healer's aid.");
+                    PauseBeforeLeaving();
+                })
         });
 
         choice();
+    }
+
+    private static void PauseBeforeLeaving()
+    {
+        Console.WriteLine("Press any key to return to town...");
+        Console.ReadKey(intercept: true);
+        Console.WriteLine();
     }
 }

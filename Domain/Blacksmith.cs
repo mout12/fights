@@ -59,6 +59,7 @@ public class Blacksmith
             var continueShopping = action();
             if (!continueShopping)
             {
+                PauseBeforeLeaving();
                 break;
             }
         }
@@ -75,5 +76,12 @@ public class Blacksmith
         fighter.EquipWeapon(weapon);
         Console.WriteLine($"You purchased the {weapon.Name}! Remaining gold: {fighter.Gold}g.");
         return false;
+    }
+
+    private static void PauseBeforeLeaving()
+    {
+        Console.WriteLine("Press any key to return to town...");
+        Console.ReadKey(intercept: true);
+        Console.WriteLine();
     }
 }

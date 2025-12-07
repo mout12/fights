@@ -34,6 +34,7 @@ public class Fight
                     new InputOption<Func<bool>>("[R]un Away", () =>
                     {
                         Console.WriteLine($"{_fighterOne.Name} decides to live another day.");
+                        PauseBeforeExit();
                         return true;
                     }, Hotkey: 'r')
                 });
@@ -41,11 +42,16 @@ public class Fight
             var actionResult = action();
             if (actionResult)
             {
+                if (_fighterTwo.Health <= 0 || _fighterOne.Health <= 0)
+                {
+                    PauseBeforeExit();
+                }
                 return _fighterOne.Health > 0;
             }
 
             if (_fighterOne.Health <= 0)
             {
+                PauseBeforeExit();
                 return false;
             }
         }
@@ -127,5 +133,12 @@ public class Fight
 
         attacker.TakeSelfDamage(payload.SelfDamage);
         return $", but takes {payload.SelfDamage} self-damage";
+    }
+
+    private static void PauseBeforeExit()
+    {
+        Console.WriteLine("Press any key to continue...");
+        Console.ReadKey(intercept: true);
+        Console.WriteLine();
     }
 }
