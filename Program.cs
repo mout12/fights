@@ -342,27 +342,35 @@ var armorer = new Armorer(armorOffers);
 var healersHut = new HealersHut();
 var saveGameService = new SaveGameService(weaponCatalog, armorCatalog);
 
-var levelOneEnemies = new List<Fighter>
+var levelSetups = new[]
 {
-    new Fighter(name: "Nerd", health: 120, weapon: GetWeapon("Stick"), armor: GetArmor("Thick Glasses"), gold: 5u),
-    new Fighter(name: "Goblin", health: 80, weapon: GetWeapon("Rusty Blade"), armor: GetArmor("Leather Scraps"), gold: 12u),
-    new Fighter(name: "Rabid Dog", health: 70, weapon: GetWeapon("Fangs"), armor: GetArmor("Matted Fur"), gold: 8u),
-    new Fighter(name: "Bandit", health: 90, weapon: GetWeapon("Shiv"), armor: GetArmor("Patchwork Vest"), gold: 15u)
+    new LevelSetup(
+        Level: 1,
+        Enemies: new List<Fighter>
+        {
+            new Fighter(name: "Nerd", health: 120, weapon: GetWeapon("Stick"), armor: GetArmor("Thick Glasses"), gold: 5u),
+            new Fighter(name: "Goblin", health: 80, weapon: GetWeapon("Rusty Blade"), armor: GetArmor("Leather Scraps"), gold: 12u),
+            new Fighter(name: "Rabid Dog", health: 70, weapon: GetWeapon("Fangs"), armor: GetArmor("Matted Fur"), gold: 8u),
+            new Fighter(name: "Bandit", health: 90, weapon: GetWeapon("Shiv"), armor: GetArmor("Patchwork Vest"), gold: 15u)
+        },
+        Boss: new Boss(name: "Dragon Whelp", level: 1, health: 200, weapon: GetWeapon("Flame Breath"), armor: GetArmor("Scale Hide"), gold: 50u)),
+    new LevelSetup(
+        Level: 2,
+        Enemies: new List<Fighter>
+        {
+            new Fighter(name: "Orc Warrior", health: 140, weapon: GetWeapon("Heavy Club"), armor: GetArmor("Chain Vest"), gold: 20u),
+            new Fighter(name: "Skeleton Knight", health: 110, weapon: GetWeapon("Ancient Sword"), armor: GetArmor("Bone Plating"), gold: 15u),
+            new Fighter(name: "Dark Archer", health: 100, weapon: GetWeapon("Shadow Bow"), armor: GetArmor("Hooded Cloak"), gold: 18u),
+            new Fighter(name: "Troll Bruiser", health: 160, weapon: GetWeapon("Stone Hammer"), armor: GetArmor("Thick Hide"), gold: 25u)
+        },
+        Boss: new Boss(name: "Lich Lord", level: 2, health: 260, weapon: GetWeapon("Soul Drain"), armor: GetArmor("Shadow Shroud"), gold: 75u))
 };
 
-var levelTwoEnemies = new List<Fighter>
+var levelContents = new Dictionary<int, LevelContent>(levelSetups.Length);
+foreach (var setup in levelSetups)
 {
-    new Fighter(name: "Orc Warrior", health: 140, weapon: GetWeapon("Heavy Club"), armor: GetArmor("Chain Vest"), gold: 20u),
-    new Fighter(name: "Skeleton Knight", health: 110, weapon: GetWeapon("Ancient Sword"), armor: GetArmor("Bone Plating"), gold: 15u),
-    new Fighter(name: "Dark Archer", health: 100, weapon: GetWeapon("Shadow Bow"), armor: GetArmor("Hooded Cloak"), gold: 18u),
-    new Fighter(name: "Troll Bruiser", health: 160, weapon: GetWeapon("Stone Hammer"), armor: GetArmor("Thick Hide"), gold: 25u)
-};
-
-var levelContents = new Dictionary<int, LevelContent>
-{
-    [1] = new LevelContent(levelOneEnemies, new Boss(name: "Dragon Whelp", level: 1, health: 200, weapon: GetWeapon("Flame Breath"), armor: GetArmor("Scale Hide"), gold: 50u)),
-    [2] = new LevelContent(levelTwoEnemies, new Boss(name: "Lich Lord", level: 2, health: 260, weapon: GetWeapon("Soul Drain"), armor: GetArmor("Shadow Shroud"), gold: 75u))
-};
+    levelContents[setup.Level] = new LevelContent(setup.Enemies, setup.Boss);
+}
 
 var player = InitializePlayer(saveGameService);
 var town = new Town(player, blacksmith, armorer, healersHut, levelContents);
@@ -409,3 +417,5 @@ Player InitializePlayer(SaveGameService saveService)
 
     return CreateNewPlayer();
 }
+
+record LevelSetup(int Level, List<Fighter> Enemies, Boss Boss);
