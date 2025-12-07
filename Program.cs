@@ -241,6 +241,87 @@ List<(IArmor armor, uint cost)> LoadArmorerOffers(string filePath)
     return offers;
 }
 
+Player LoadPlayerTemplate(string filePath)
+{
+    var fullPath = Path.GetFullPath(filePath);
+    if (!File.Exists(fullPath))
+    {
+        throw new FileNotFoundException($"New game template '{fullPath}' was not found.");
+    }
+
+    var data = ParseKeyValueLines(File.ReadLines(fullPath));
+
+    var name = GetRequiredString(data, "Name");
+    var level = GetRequiredInt(data, "Level");
+    var health = GetRequiredInt(data, "Health");
+    var maxHealth = GetRequiredInt(data, "MaxHealth");
+    var weaponName = GetRequiredString(data, "WeaponName");
+    var armorName = GetRequiredString(data, "ArmorName");
+    var gold = GetRequiredUint(data, "Gold");
+
+    var player = new Player(
+        name,
+        level,
+        maxHealth,
+        GetWeapon(weaponName),
+        GetArmor(armorName),
+        gold);
+
+    player.RestoreHealth(health, maxHealth);
+    return player;
+}
+
+Dictionary<string, string> ParseKeyValueLines(IEnumerable<string> lines)
+{
+    var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    foreach (var line in lines)
+    {
+        var trimmed = line.Trim();
+        if (string.IsNullOrEmpty(trimmed) || trimmed.StartsWith("#", StringComparison.Ordinal))
+        {
+            continue;
+        }
+
+        var parts = trimmed.Split('=', 2, StringSplitOptions.TrimEntries);
+        if (parts.Length == 2 && !string.IsNullOrEmpty(parts[0]))
+        {
+            data[parts[0]] = parts[1];
+        }
+    }
+
+    return data;
+}
+
+string GetRequiredString(Dictionary<string, string> data, string key)
+{
+    if (!data.TryGetValue(key, out var value) || string.IsNullOrWhiteSpace(value))
+    {
+        throw new InvalidDataException($"Missing value for '{key}' in new game template.");
+    }
+
+    return value;
+}
+
+int GetRequiredInt(Dictionary<string, string> data, string key)
+{
+    if (!data.TryGetValue(key, out var value) || !int.TryParse(value, out var result))
+    {
+        throw new InvalidDataException($"Invalid integer for '{key}' in new game template.");
+    }
+
+    return result;
+}
+
+uint GetRequiredUint(Dictionary<string, string> data, string key)
+{
+    if (!data.TryGetValue(key, out var value) || !uint.TryParse(value, out var result))
+    {
+        throw new InvalidDataException($"Invalid unsigned integer for '{key}' in new game template.");
+    }
+
+    return result;
+}
+
 var weaponDataPath = Path.Combine(AppContext.BaseDirectory, "Data", "Weapons.txt");
 LoadWeaponsFromFile(weaponDataPath);
 var armorDataPath = Path.Combine(AppContext.BaseDirectory, "Data", "Armor.txt");
@@ -252,13 +333,8 @@ var armorOffers = LoadArmorerOffers(armorerDataPath);
 
 Player CreateNewPlayer()
 {
-    return new Player(
-        name: "Jackson",
-        level: 1,
-        health: 100,
-        weapon: GetWeapon("Fists"),
-        armor: GetArmor("Cloth Shirt"),
-        gold: 1000u);
+    var newGamePath = Path.Combine(AppContext.BaseDirectory, "Data", "NewGame.txt");
+    return LoadPlayerTemplate(newGamePath);
 }
 
 var blacksmith = new Blacksmith(weaponOffers);

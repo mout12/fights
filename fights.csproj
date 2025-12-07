@@ -24,6 +24,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>Data\Armorer.txt</TargetPath>
     </None>
+    <None Include="Data/NewGame.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>Data\NewGame.txt</TargetPath>
+    </None>
   </ItemGroup>
 
 </Project>
