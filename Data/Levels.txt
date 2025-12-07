@@ -1,0 +1,14 @@
+# Level data format:
+# Level,Type,Name,Health|BossLevel,WeaponName,ArmorName,Gold
+# Enemy rows: Level,Enemy,Name,Health,WeaponName,ArmorName,Gold
+# Boss rows: Level,Boss,Name,BossLevel,Health,WeaponName,ArmorName,Gold
+1,Enemy,Nerd,120,Stick,Thick Glasses,5
+1,Enemy,Goblin,80,Rusty Blade,Leather Scraps,12
+1,Enemy,Rabid Dog,70,Fangs,Matted Fur,8
+1,Enemy,Bandit,90,Shiv,Patchwork Vest,15
+1,Boss,Dragon Whelp,1,200,Flame Breath,Scale Hide,50
+2,Enemy,Orc Warrior,140,Heavy Club,Chain Vest,20
+2,Enemy,Skeleton Knight,110,Ancient Sword,Bone Plating,15
+2,Enemy,Dark Archer,100,Shadow Bow,Hooded Cloak,18
+2,Enemy,Troll Bruiser,160,Stone Hammer,Thick Hide,25
+2,Boss,Lich Lord,2,260,Soul Drain,Shadow Shroud,75

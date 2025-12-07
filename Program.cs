@@ -241,6 +241,158 @@ List<(IArmor armor, uint cost)> LoadArmorerOffers(string filePath)
     return offers;
 }
 
+List<LevelSetup> LoadLevelSetups(string filePath)
+{
+    var fullPath = Path.GetFullPath(filePath);
+    if (!File.Exists(fullPath))
+    {
+        throw new FileNotFoundException($"Level data file '{fullPath}' was not found.");
+    }
+
+    var enemiesByLevel = new Dictionary<int, List<Fighter>>();
+    var bossesByLevel = new Dictionary<int, Boss>();
+    var levelOrder = new List<int>();
+    var seenLevels = new HashSet<int>();
+
+    foreach (var line in FilterDataLines(File.ReadLines(fullPath)))
+    {
+        var parts = line.Split(',', StringSplitOptions.TrimEntries);
+        if (parts.Length < 3)
+        {
+            Console.WriteLine($"Skipping invalid level entry: '{line}'");
+            continue;
+        }
+
+        if (!int.TryParse(parts[0], out var level) || level < 1)
+        {
+            Console.WriteLine($"Skipping level entry with invalid level '{parts[0]}': '{line}'");
+            continue;
+        }
+
+        if (seenLevels.Add(level))
+        {
+            levelOrder.Add(level);
+        }
+
+        var entryType = parts[1];
+        if (entryType.Equals("Enemy", StringComparison.OrdinalIgnoreCase))
+        {
+            ParseEnemyEntry(level, parts, line, enemiesByLevel);
+        }
+        else if (entryType.Equals("Boss", StringComparison.OrdinalIgnoreCase))
+        {
+            ParseBossEntry(level, parts, line, bossesByLevel);
+        }
+        else
+        {
+            Console.WriteLine($"Skipping level entry with unknown type '{entryType}': '{line}'");
+        }
+    }
+
+    var setups = new List<LevelSetup>();
+    foreach (var level in levelOrder)
+    {
+        if (!enemiesByLevel.TryGetValue(level, out var enemies) || enemies.Count == 0)
+        {
+            throw new InvalidDataException($"Level {level} does not have any enemies defined.");
+        }
+
+        if (!bossesByLevel.TryGetValue(level, out var boss))
+        {
+            throw new InvalidDataException($"Level {level} does not have a boss defined.");
+        }
+
+        setups.Add(new LevelSetup(level, enemies, boss));
+    }
+
+    return setups;
+}
+
+void ParseEnemyEntry(int level, string[] parts, string rawLine, Dictionary<int, List<Fighter>> enemiesByLevel)
+{
+    if (parts.Length != 7)
+    {
+        Console.WriteLine($"Skipping enemy entry with unexpected format: '{rawLine}'");
+        return;
+    }
+
+    var name = parts[2];
+    if (!int.TryParse(parts[3], out var health))
+    {
+        Console.WriteLine($"Skipping enemy '{name}' for level {level} with invalid health: '{parts[3]}'");
+        return;
+    }
+
+    var weaponName = parts[4];
+    var armorName = parts[5];
+    if (!uint.TryParse(parts[6], out var gold))
+    {
+        Console.WriteLine($"Skipping enemy '{name}' for level {level} with invalid gold: '{parts[6]}'");
+        return;
+    }
+
+    try
+    {
+        var fighter = new Fighter(name, health, GetWeapon(weaponName), GetArmor(armorName), gold);
+        if (!enemiesByLevel.TryGetValue(level, out var list))
+        {
+            list = new List<Fighter>();
+            enemiesByLevel[level] = list;
+        }
+
+        list.Add(fighter);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Skipping enemy '{name}' for level {level}: {ex.Message}");
+    }
+}
+
+void ParseBossEntry(int level, string[] parts, string rawLine, Dictionary<int, Boss> bossesByLevel)
+{
+    if (parts.Length != 8)
+    {
+        Console.WriteLine($"Skipping boss entry with unexpected format: '{rawLine}'");
+        return;
+    }
+
+    var name = parts[2];
+    if (!int.TryParse(parts[3], out var bossLevel))
+    {
+        Console.WriteLine($"Skipping boss '{name}' for level {level} with invalid boss level: '{parts[3]}'");
+        return;
+    }
+
+    if (!int.TryParse(parts[4], out var health))
+    {
+        Console.WriteLine($"Skipping boss '{name}' for level {level} with invalid health: '{parts[4]}'");
+        return;
+    }
+
+    var weaponName = parts[5];
+    var armorName = parts[6];
+    if (!uint.TryParse(parts[7], out var gold))
+    {
+        Console.WriteLine($"Skipping boss '{name}' for level {level} with invalid gold: '{parts[7]}'");
+        return;
+    }
+
+    if (bossesByLevel.ContainsKey(level))
+    {
+        Console.WriteLine($"Level {level} already has a boss defined. Skipping '{name}'.");
+        return;
+    }
+
+    try
+    {
+        bossesByLevel[level] = new Boss(name, bossLevel, health, GetWeapon(weaponName), GetArmor(armorName), gold);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Skipping boss '{name}' for level {level}: {ex.Message}");
+    }
+}
+
 Player LoadPlayerTemplate(string filePath)
 {
     var fullPath = Path.GetFullPath(filePath);
@@ -330,6 +482,8 @@ var blacksmithDataPath = Path.Combine(AppContext.BaseDirectory, "Data", "Blacksm
 var weaponOffers = LoadBlacksmithOffers(blacksmithDataPath);
 var armorerDataPath = Path.Combine(AppContext.BaseDirectory, "Data", "Armorer.txt");
 var armorOffers = LoadArmorerOffers(armorerDataPath);
+var levelsDataPath = Path.Combine(AppContext.BaseDirectory, "Data", "Levels.txt");
+var levelSetups = LoadLevelSetups(levelsDataPath);
 
 Player CreateNewPlayer()
 {
@@ -342,31 +496,7 @@ var armorer = new Armorer(armorOffers);
 var healersHut = new HealersHut();
 var saveGameService = new SaveGameService(weaponCatalog, armorCatalog);
 
-var levelSetups = new[]
-{
-    new LevelSetup(
-        Level: 1,
-        Enemies: new List<Fighter>
-        {
-            new Fighter(name: "Nerd", health: 120, weapon: GetWeapon("Stick"), armor: GetArmor("Thick Glasses"), gold: 5u),
-            new Fighter(name: "Goblin", health: 80, weapon: GetWeapon("Rusty Blade"), armor: GetArmor("Leather Scraps"), gold: 12u),
-            new Fighter(name: "Rabid Dog", health: 70, weapon: GetWeapon("Fangs"), armor: GetArmor("Matted Fur"), gold: 8u),
-            new Fighter(name: "Bandit", health: 90, weapon: GetWeapon("Shiv"), armor: GetArmor("Patchwork Vest"), gold: 15u)
-        },
-        Boss: new Boss(name: "Dragon Whelp", level: 1, health: 200, weapon: GetWeapon("Flame Breath"), armor: GetArmor("Scale Hide"), gold: 50u)),
-    new LevelSetup(
-        Level: 2,
-        Enemies: new List<Fighter>
-        {
-            new Fighter(name: "Orc Warrior", health: 140, weapon: GetWeapon("Heavy Club"), armor: GetArmor("Chain Vest"), gold: 20u),
-            new Fighter(name: "Skeleton Knight", health: 110, weapon: GetWeapon("Ancient Sword"), armor: GetArmor("Bone Plating"), gold: 15u),
-            new Fighter(name: "Dark Archer", health: 100, weapon: GetWeapon("Shadow Bow"), armor: GetArmor("Hooded Cloak"), gold: 18u),
-            new Fighter(name: "Troll Bruiser", health: 160, weapon: GetWeapon("Stone Hammer"), armor: GetArmor("Thick Hide"), gold: 25u)
-        },
-        Boss: new Boss(name: "Lich Lord", level: 2, health: 260, weapon: GetWeapon("Soul Drain"), armor: GetArmor("Shadow Shroud"), gold: 75u))
-};
-
-var levelContents = new Dictionary<int, LevelContent>(levelSetups.Length);
+var levelContents = new Dictionary<int, LevelContent>(levelSetups.Count);
 foreach (var setup in levelSetups)
 {
     levelContents[setup.Level] = new LevelContent(setup.Enemies, setup.Boss);

@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{60167427-D
 			Data\Blacksmith.txt = Data\Blacksmith.txt
 			Data\Armorer.txt = Data\Armorer.txt
 			Data\NewGame.txt = Data\NewGame.txt
+			Data\Levels.txt = Data\Levels.txt
 		EndProjectSection
 	EndProject
 Global
