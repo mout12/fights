@@ -53,11 +53,7 @@ public class Town
                 new InputOption<Func<TownLoopResult>>("Visit the healer's hut", () => { _healersHut.Enter(_player); return TownLoopResult.Continue; }),
                 new InputOption<Func<TownLoopResult>>("Venture out and fight", () => StartFight() ? TownLoopResult.Continue : TownLoopResult.AdventureEnded),
                 new InputOption<Func<TownLoopResult>>(bossDescription, () => StartBossFight() ? TownLoopResult.Continue : TownLoopResult.AdventureEnded),
-                new InputOption<Func<TownLoopResult>>("Leave town", () =>
-                {
-                    Console.WriteLine("You decide to rest and leave the adventure for another day.");
-                    return TownLoopResult.LeftTown;
-                }, Hotkey: 'q')
+                new InputOption<Func<TownLoopResult>>("[Q]uit to fields", () => ConfirmQuit(), Hotkey: 'q')
             };
 
             var action = _inputSelector.SelectOption("Where will you go?", options);
@@ -73,6 +69,27 @@ public class Town
                 return false;
             }
         }
+    }
+
+    private TownLoopResult ConfirmQuit()
+    {
+        var selection = _inputSelector.SelectOption(
+            "Are you sure you want to leave town?",
+            new[]
+            {
+                new InputOption<Func<TownLoopResult>>("[Y]es", () =>
+                {
+                    Console.WriteLine("You decide to rest and leave the adventure for another day.");
+                    return TownLoopResult.LeftTown;
+                }, Hotkey: 'y'),
+                new InputOption<Func<TownLoopResult>>("[N]o", () =>
+                {
+                    Console.WriteLine("You stay in town, determined to continue the adventure.");
+                    return TownLoopResult.Continue;
+                }, Hotkey: 'n')
+            });
+
+        return selection();
     }
 
     private bool StartFight()
