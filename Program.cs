@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using fights;
 
 var weaponCatalog = new Dictionary<string, IWeapon>(StringComparer.OrdinalIgnoreCase);
@@ -65,35 +66,57 @@ void RegisterWeapons()
     }
 }
 
-void RegisterArmors()
+void LoadArmorsFromFile(string filePath)
 {
-    var armors = new IArmor[]
+    var fullPath = Path.GetFullPath(filePath);
+    if (!File.Exists(fullPath))
     {
-        new Armor(name: "Cloth Shirt", defense: 1),
-        new Armor(name: "Padded Vest", defense: 2),
-        new Armor(name: "Chain Shirt", defense: 4),
-        new Armor(name: "Enchanted Robes", defense: 5),
-        new Armor(name: "Plate Mail", defense: 6),
-        new Armor(name: "Thick Glasses", defense: 1),
-        new Armor(name: "Leather Scraps", defense: 2),
-        new Armor(name: "Matted Fur", defense: 1),
-        new Armor(name: "Patchwork Vest", defense: 2),
-        new Armor(name: "Chain Vest", defense: 3),
-        new Armor(name: "Bone Plating", defense: 2),
-        new Armor(name: "Hooded Cloak", defense: 3),
-        new Armor(name: "Thick Hide", defense: 4),
-        new Armor(name: "Scale Hide", defense: 4),
-        new Armor(name: "Shadow Shroud", defense: 5)
-    };
+        throw new FileNotFoundException($"Armor data file '{fullPath}' was not found.");
+    }
 
-    foreach (var armor in armors)
+    foreach (var line in FilterArmorLines(File.ReadLines(fullPath)))
     {
-        RegisterArmor(armor);
+        var parts = line.Split(',', 2, StringSplitOptions.TrimEntries);
+        if (parts.Length != 2)
+        {
+            Console.WriteLine($"Skipping invalid armor entry: '{line}'");
+            continue;
+        }
+
+        var name = parts[0];
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            Console.WriteLine($"Skipping armor entry with no name: '{line}'");
+            continue;
+        }
+
+        if (!int.TryParse(parts[1], out var defense))
+        {
+            Console.WriteLine($"Skipping armor '{name}' with invalid defense: '{parts[1]}'");
+            continue;
+        }
+
+        RegisterArmor(new Armor(name, defense));
+    }
+}
+
+IEnumerable<string> FilterArmorLines(IEnumerable<string> lines)
+{
+    foreach (var line in lines)
+    {
+        var trimmed = line.Trim();
+        if (string.IsNullOrEmpty(trimmed) || trimmed.StartsWith("#", StringComparison.Ordinal))
+        {
+            continue;
+        }
+
+        yield return trimmed;
     }
 }
 
 RegisterWeapons();
-RegisterArmors();
+var armorDataPath = Path.Combine(AppContext.BaseDirectory, "Data", "Armor.txt");
+LoadArmorsFromFile(armorDataPath);
 
 Player CreateNewPlayer()
 {

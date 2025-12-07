@@ -1,0 +1,16 @@
+# Armor catalog in the format: Name,Defense
+Cloth Shirt,1
+Padded Vest,2
+Chain Shirt,4
+Enchanted Robes,5
+Plate Mail,6
+Thick Glasses,1
+Leather Scraps,2
+Matted Fur,1
+Patchwork Vest,2
+Chain Vest,3
+Bone Plating,2
+Hooded Cloak,3
+Thick Hide,4
+Scale Hide,4
+Shadow Shroud,5
