@@ -66,7 +66,8 @@ public class Weapon : IWeapon
 
     public virtual IDamagePayload CreateDamagePayload()
     {
-        foreach (var modifier in _modifiers)
+        var modifiersSnapshot = _modifiers.ToArray();
+        foreach (var modifier in modifiersSnapshot)
         {
             modifier.BeforeAttack(this);
         }
@@ -75,7 +76,7 @@ public class Weapon : IWeapon
         var damage = isCritical ? Damage * 2 : Damage;
         IDamagePayload payload = new DamagePayload(damage, selfDamage: 0, isCritical);
 
-        foreach (var modifier in _modifiers)
+        foreach (var modifier in modifiersSnapshot)
         {
             payload = modifier.ModifyPayload(this, payload);
         }
@@ -86,7 +87,8 @@ public class Weapon : IWeapon
     internal bool TryRepair()
     {
         var repaired = false;
-        foreach (var modifier in _modifiers.OfType<IRepairableWeaponModifier>())
+        var repairModifiers = _modifiers.OfType<IRepairableWeaponModifier>().ToArray();
+        foreach (var modifier in repairModifiers)
         {
             if (modifier.TryRepair(this))
             {
