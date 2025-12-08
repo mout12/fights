@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 
 namespace fights;
 
@@ -86,8 +87,8 @@ public class DataLoadingService
 
         foreach (var line in FilterDataLines(File.ReadLines(fullPath)))
         {
-            var parts = line.Split(',', 2, StringSplitOptions.TrimEntries);
-            if (parts.Length != 2)
+            var parts = line.Split(',', 3, StringSplitOptions.TrimEntries);
+            if (parts.Length < 2)
             {
                 Console.WriteLine($"Skipping invalid blacksmith offer: '{line}'");
                 continue;
@@ -106,9 +107,17 @@ public class DataLoadingService
                 continue;
             }
 
+            var stateJson = parts.Length == 3 ? parts[2] : null;
+
             try
             {
-                offers.Add((weaponResolver(weaponName), cost));
+                var weapon = weaponResolver(weaponName);
+                if (!string.IsNullOrWhiteSpace(stateJson) && !TryApplyWeaponState(weapon, stateJson))
+                {
+                    Console.WriteLine($"Skipping weapon state for '{weaponName}' due to invalid data.");
+                }
+
+                offers.Add((weapon, cost));
             }
             catch (InvalidOperationException)
             {
@@ -265,14 +274,15 @@ public class DataLoadingService
         return fullPath;
     }
 
+    private const string LegacySelfDamagingType = "SelfDamagingWeapon";
+    private const string LegacyBreakableType = "BreakableWeapon";
+
     private static IWeapon? CreateWeaponFromParts(string type, string name, int damage, string[] parts)
     {
-        if (type.Equals(nameof(Weapon), StringComparison.OrdinalIgnoreCase))
-        {
-            return new Weapon(name, damage);
-        }
+        var modifiers = new List<IWeaponModifier>();
+        var nextModifierIndex = 3;
 
-        if (type.Equals(nameof(SelfDamagingWeapon), StringComparison.OrdinalIgnoreCase))
+        if (type.Equals(LegacySelfDamagingType, StringComparison.OrdinalIgnoreCase))
         {
             if (parts.Length < 4)
             {
@@ -286,10 +296,12 @@ public class DataLoadingService
                 return null;
             }
 
-            return new SelfDamagingWeapon(name, damage, selfDamage);
+            modifiers.Add(new SelfDamageWeaponModifier(selfDamage));
+            nextModifierIndex = 4;
+            type = nameof(Weapon);
         }
 
-        if (type.Equals(nameof(BreakableWeapon), StringComparison.OrdinalIgnoreCase))
+        if (type.Equals(LegacyBreakableType, StringComparison.OrdinalIgnoreCase))
         {
             if (parts.Length < 6)
             {
@@ -303,24 +315,129 @@ public class DataLoadingService
                 return null;
             }
 
-            var brokenName = parts[4];
-            if (string.IsNullOrWhiteSpace(brokenName))
+            var brokenNameLegacy = parts[4];
+            if (string.IsNullOrWhiteSpace(brokenNameLegacy))
             {
                 Console.WriteLine($"Skipping breakable weapon '{name}' because broken name is missing.");
                 return null;
             }
 
-            if (!int.TryParse(parts[5], out var brokenDamage))
+            if (!int.TryParse(parts[5], out _))
             {
                 Console.WriteLine($"Skipping breakable weapon '{name}' with invalid broken damage: '{parts[5]}'");
                 return null;
             }
 
-            return new BreakableWeapon(name, damage, breakChance, brokenName, brokenDamage);
+            modifiers.Add(new BreakableWeaponModifier(breakChance, brokenNameLegacy));
+            nextModifierIndex = 6;
+            type = nameof(Weapon);
         }
 
-        Console.WriteLine($"Skipping weapon '{name}' with unknown type '{type}'.");
-        return null;
+        if (!type.Equals(nameof(Weapon), StringComparison.OrdinalIgnoreCase))
+        {
+            Console.WriteLine($"Skipping weapon '{name}' with unknown type '{type}'.");
+            return null;
+        }
+
+        for (var i = nextModifierIndex; i < parts.Length; i++)
+        {
+            var descriptor = parts[i];
+            if (string.IsNullOrWhiteSpace(descriptor))
+            {
+                continue;
+            }
+
+            if (TryCreateModifierFromDescriptor(descriptor, out var modifier))
+            {
+                modifiers.Add(modifier!);
+            }
+            else
+            {
+                Console.WriteLine($"Skipping modifier '{descriptor}' for weapon '{name}' due to invalid format.");
+            }
+        }
+
+        return new Weapon(name, damage, modifiers);
+    }
+
+    private static bool TryCreateModifierFromDescriptor(string descriptor, out IWeaponModifier? modifier)
+    {
+        modifier = null;
+
+        var modifierParts = descriptor.Split(':', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        if (modifierParts.Length == 0)
+        {
+            return false;
+        }
+
+        var modifierType = modifierParts[0];
+        if (modifierType.Equals("SelfDamage", StringComparison.OrdinalIgnoreCase))
+        {
+            if (modifierParts.Length != 2)
+            {
+                return false;
+            }
+
+            if (!int.TryParse(modifierParts[1], out var selfDamage) || selfDamage < 0)
+            {
+                return false;
+            }
+
+            modifier = new SelfDamageWeaponModifier(selfDamage);
+            return true;
+        }
+
+        if (modifierType.Equals("Breakable", StringComparison.OrdinalIgnoreCase))
+        {
+            if (modifierParts.Length < 3)
+            {
+                return false;
+            }
+
+            if (!int.TryParse(modifierParts[1], out var breakChance) || breakChance < 1)
+            {
+                return false;
+            }
+
+            var brokenWeaponKey = modifierParts[2];
+            if (string.IsNullOrWhiteSpace(brokenWeaponKey))
+            {
+                return false;
+            }
+
+            modifier = new BreakableWeaponModifier(breakChance, brokenWeaponKey);
+            return true;
+        }
+
+        if (modifierType.Equals("RepairTo", StringComparison.OrdinalIgnoreCase))
+        {
+            if (modifierParts.Length != 2)
+            {
+                return false;
+            }
+
+            var repairedWeaponKey = modifierParts[1];
+            if (string.IsNullOrWhiteSpace(repairedWeaponKey))
+            {
+                return false;
+            }
+
+            modifier = new RepairWeaponModifier(repairedWeaponKey);
+            return true;
+        }
+
+        if (modifierType.Equals("DoubleStrike", StringComparison.OrdinalIgnoreCase))
+        {
+            if (modifierParts.Length != 1)
+            {
+                return false;
+            }
+
+            modifier = new DoubleStrikeWeaponModifier();
+            return true;
+        }
+
+        return false;
     }
 
     private static void ParseEnemyEntry(
@@ -417,6 +534,26 @@ public class DataLoadingService
         catch (Exception ex)
         {
             Console.WriteLine($"Skipping boss '{name}' for level {level}: {ex.Message}");
+        }
+    }
+
+    private static bool TryApplyWeaponState(IWeapon weapon, string stateJson)
+    {
+        try
+        {
+            var state = JsonSerializer.Deserialize<WeaponState>(stateJson);
+            if (state is null)
+            {
+                return false;
+            }
+
+            weapon.RestoreState(state);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to apply weapon state: {ex.Message}");
+            return false;
         }
     }
 

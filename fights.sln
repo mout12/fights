@@ -29,6 +29,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Contracts", "Contracts", "{
 		Contracts\IFighter.cs = Contracts\IFighter.cs
 		Contracts\ILevel.cs = Contracts\ILevel.cs
 		Contracts\IWeapon.cs = Contracts\IWeapon.cs
+		Contracts\WeaponState.cs = Contracts\WeaponState.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{D6138EAA-68F4-4A0E-A237-47AADFAE74B4}"
@@ -36,7 +37,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{D6138E
 		Domain\Armor.cs = Domain\Armor.cs
 		Domain\Armorer.cs = Domain\Armorer.cs
 		Domain\Blacksmith.cs = Domain\Blacksmith.cs
-		Domain\BreakableWeapon.cs = Domain\BreakableWeapon.cs
 		Domain\Boss.cs = Domain\Boss.cs
 		Domain\DamagePayload.cs = Domain\DamagePayload.cs
 		Domain\Fight.cs = Domain\Fight.cs
@@ -45,9 +45,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{D6138E
 		Domain\LevelContent.cs = Domain\LevelContent.cs
 		Domain\LevelSetup.cs = Domain\LevelSetup.cs
 		Domain\Player.cs = Domain\Player.cs
-		Domain\SelfDamagingWeapon.cs = Domain\SelfDamagingWeapon.cs
 		Domain\Town.cs = Domain\Town.cs
 		Domain\Weapon.cs = Domain\Weapon.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WeaponModifiers", "WeaponModifiers", "{B5F1C5B2-0CE4-4A77-8D9C-E7B1BFD4A655}"
+	ProjectSection(SolutionItems) = preProject
+		Domain\WeaponModifiers\BreakableWeaponModifier.cs = Domain\WeaponModifiers\BreakableWeaponModifier.cs
+		Domain\WeaponModifiers\DoubleStrikeWeaponModifier.cs = Domain\WeaponModifiers\DoubleStrikeWeaponModifier.cs
+		Domain\WeaponModifiers\IRepairableWeaponModifier.cs = Domain\WeaponModifiers\IRepairableWeaponModifier.cs
+		Domain\WeaponModifiers\IWeaponModifier.cs = Domain\WeaponModifiers\IWeaponModifier.cs
+		Domain\WeaponModifiers\RepairWeaponModifier.cs = Domain\WeaponModifiers\RepairWeaponModifier.cs
+		Domain\WeaponModifiers\SelfDamageWeaponModifier.cs = Domain\WeaponModifiers\SelfDamageWeaponModifier.cs
 	EndProjectSection
 EndProject
 Global
@@ -63,6 +72,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B5F1C5B2-0CE4-4A77-8D9C-E7B1BFD4A655} = {D6138EAA-68F4-4A0E-A237-47AADFAE74B4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8F9E3906-3557-4932-A8CB-4B542BFBEEBF}
