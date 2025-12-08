@@ -2,7 +2,7 @@ using System;
 
 namespace fights;
 
-public sealed class BreakableWeaponModifier : IWeaponModifier
+public sealed class BreakableWeaponModifier : IRepairableWeaponModifier
 {
     private readonly int _breakChance;
     private readonly string _brokenName;
@@ -73,5 +73,25 @@ public sealed class BreakableWeaponModifier : IWeaponModifier
         ArgumentNullException.ThrowIfNull(weapon);
         _originalName = weapon.TemplateName;
         _isBroken = string.Equals(state, "broken", StringComparison.OrdinalIgnoreCase);
+    }
+
+    public bool CanRepair(Weapon weapon)
+    {
+        ArgumentNullException.ThrowIfNull(weapon);
+        return _isBroken;
+    }
+
+    public bool TryRepair(Weapon weapon)
+    {
+        ArgumentNullException.ThrowIfNull(weapon);
+        if (!_isBroken)
+        {
+            return false;
+        }
+
+        _isBroken = false;
+        weapon.ResetToBase();
+        Console.WriteLine($"{weapon.TemplateName} has been repaired to its former glory.");
+        return true;
     }
 }

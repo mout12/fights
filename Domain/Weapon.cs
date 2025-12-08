@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace fights;
 
@@ -30,6 +31,7 @@ public class Weapon : IWeapon
     public string TemplateName { get; }
     public string Name { get; private set; }
     public int Damage { get; private set; }
+    public bool CanRepair => _modifiers.OfType<IRepairableWeaponModifier>().Any(m => m.CanRepair(this));
 
     internal void UpdateState(string? newName = null, int? newDamage = null)
     {
@@ -49,6 +51,12 @@ public class Weapon : IWeapon
         }
     }
 
+    internal void ResetToBase()
+    {
+        Name = TemplateName;
+        Damage = _baseDamage;
+    }
+
     public virtual IDamagePayload CreateDamagePayload()
     {
         foreach (var modifier in _modifiers)
@@ -66,6 +74,20 @@ public class Weapon : IWeapon
         }
 
         return payload;
+    }
+
+    public bool TryRepair()
+    {
+        var repaired = false;
+        foreach (var modifier in _modifiers.OfType<IRepairableWeaponModifier>())
+        {
+            if (modifier.TryRepair(this))
+            {
+                repaired = true;
+            }
+        }
+
+        return repaired;
     }
 
     public WeaponState CaptureState()

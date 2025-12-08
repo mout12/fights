@@ -41,6 +41,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{D6138E
 		Domain\DamagePayload.cs = Domain\DamagePayload.cs
 		Domain\Fight.cs = Domain\Fight.cs
 		Domain\Fighter.cs = Domain\Fighter.cs
+		Domain\IRepairableWeaponModifier.cs = Domain\IRepairableWeaponModifier.cs
 		Domain\IWeaponModifier.cs = Domain\IWeaponModifier.cs
 		Domain\HealersHut.cs = Domain\HealersHut.cs
 		Domain\LevelContent.cs = Domain\LevelContent.cs

@@ -9,4 +9,6 @@ public interface IWeapon
     WeaponState CaptureState();
     void RestoreState(WeaponState state);
     IWeapon Clone();
+    bool CanRepair { get; }
+    bool TryRepair();
 }

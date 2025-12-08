@@ -6,6 +6,7 @@ namespace fights;
 
 public class Blacksmith
 {
+    private const uint RepairCost = 80;
     private readonly List<(IWeapon Weapon, uint Cost)> _weaponOffers;
     private readonly IInputSelectionService _inputSelector;
 
@@ -47,6 +48,13 @@ public class Blacksmith
                     () => TryPurchaseWeapon(fighter, weapon, cost)));
             }
 
+            if (fighter.Weapon.CanRepair)
+            {
+                options.Add(new InputOption<Func<bool>>(
+                    $"Repair your {fighter.Weapon.Name} ({RepairCost}g)",
+                    () => TryRepairWeapon(fighter)));
+            }
+
             options.Add(new InputOption<Func<bool>>(
                 "Leave without buying anything",
                 () =>
@@ -73,9 +81,36 @@ public class Blacksmith
             return true;
         }
 
-        fighter.EquipWeapon(weapon);
-        Console.WriteLine($"You purchased the {weapon.Name}! Remaining gold: {fighter.Gold}g.");
+        var purchasedWeapon = weapon.Clone();
+        fighter.EquipWeapon(purchasedWeapon);
+        Console.WriteLine($"You purchased the {purchasedWeapon.Name}! Remaining gold: {fighter.Gold}g.");
         return false;
+    }
+
+    private bool TryRepairWeapon(Fighter fighter)
+    {
+        if (!fighter.Weapon.CanRepair)
+        {
+            Console.WriteLine("Your weapon is already in perfect condition.");
+            return true;
+        }
+
+        if (!fighter.TrySpendGold(RepairCost))
+        {
+            Console.WriteLine("Not enough gold to pay for repairs.");
+            return true;
+        }
+
+        if (fighter.Weapon.TryRepair())
+        {
+            Console.WriteLine($"The blacksmith restores your {fighter.Weapon.Name}! Remaining gold: {fighter.Gold}g.");
+        }
+        else
+        {
+            Console.WriteLine("The blacksmith couldn't repair your weapon.");
+        }
+
+        return true;
     }
 
     private static void PauseBeforeLeaving()
