@@ -6,7 +6,6 @@ namespace fights;
 
 public class Weapon : IWeapon
 {
-    private readonly List<IWeaponModifier> _modifiers;
     private readonly int _baseDamage;
 
     public Weapon(string name, int damage, IEnumerable<IWeaponModifier>? modifiers = null)
@@ -25,13 +24,14 @@ public class Weapon : IWeapon
         Name = name;
         Damage = damage;
         _baseDamage = damage;
-        _modifiers = modifiers is null ? new List<IWeaponModifier>() : new List<IWeaponModifier>(modifiers);
+        Modifiers = modifiers is null ? new List<IWeaponModifier>() : new List<IWeaponModifier>(modifiers);
     }
 
     public string TemplateName { get; }
     public string Name { get; private set; }
     public int Damage { get; private set; }
-    public bool CanRepair => _modifiers.OfType<IRepairableWeaponModifier>().Any(m => m.CanRepair(this));
+    public IList<IWeaponModifier> Modifiers { get; }
+    internal bool CanRepair => Modifiers.OfType<IRepairableWeaponModifier>().Any(m => m.CanRepair(this));
 
     internal void UpdateState(string? newName = null, int? newDamage = null)
     {
@@ -59,7 +59,7 @@ public class Weapon : IWeapon
 
     public virtual IDamagePayload CreateDamagePayload()
     {
-        foreach (var modifier in _modifiers)
+        foreach (var modifier in Modifiers)
         {
             modifier.BeforeAttack(this);
         }
@@ -68,7 +68,7 @@ public class Weapon : IWeapon
         var damage = isCritical ? Damage * 2 : Damage;
         IDamagePayload payload = new DamagePayload(damage, selfDamage: 0, isCritical);
 
-        foreach (var modifier in _modifiers)
+        foreach (var modifier in Modifiers)
         {
             payload = modifier.ModifyPayload(this, payload);
         }
@@ -76,10 +76,10 @@ public class Weapon : IWeapon
         return payload;
     }
 
-    public bool TryRepair()
+    internal bool TryRepair()
     {
         var repaired = false;
-        foreach (var modifier in _modifiers.OfType<IRepairableWeaponModifier>())
+        foreach (var modifier in Modifiers.OfType<IRepairableWeaponModifier>())
         {
             if (modifier.TryRepair(this))
             {
@@ -92,8 +92,8 @@ public class Weapon : IWeapon
 
     public WeaponState CaptureState()
     {
-        var modifierStates = new List<string?>(_modifiers.Count);
-        foreach (var modifier in _modifiers)
+        var modifierStates = new List<string?>(Modifiers.Count);
+        foreach (var modifier in Modifiers)
         {
             modifierStates.Add(modifier.CaptureState(this));
         }
@@ -112,18 +112,18 @@ public class Weapon : IWeapon
 
         UpdateState(state.Name, state.Damage);
 
-        var modifierCount = _modifiers.Count;
+        var modifierCount = Modifiers.Count;
         for (var i = 0; i < modifierCount; i++)
         {
             var modifierState = i < state.ModifierStates.Count ? state.ModifierStates[i] : null;
-            _modifiers[i].RestoreState(this, modifierState);
+            Modifiers[i].RestoreState(this, modifierState);
         }
     }
 
     public IWeapon Clone()
     {
-        var clonedModifiers = new List<IWeaponModifier>(_modifiers.Count);
-        foreach (var modifier in _modifiers)
+        var clonedModifiers = new List<IWeaponModifier>(Modifiers.Count);
+        foreach (var modifier in Modifiers)
         {
             clonedModifiers.Add(modifier.Clone());
         }

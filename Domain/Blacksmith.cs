@@ -48,11 +48,11 @@ public class Blacksmith
                     () => TryPurchaseWeapon(fighter, weapon, cost)));
             }
 
-            if (fighter.Weapon.CanRepair)
+            if (fighter.Weapon is Weapon fighterWeapon && fighterWeapon.CanRepair)
             {
                 options.Add(new InputOption<Func<bool>>(
-                    $"Repair your {fighter.Weapon.Name} ({RepairCost}g)",
-                    () => TryRepairWeapon(fighter)));
+                    $"Repair your {fighterWeapon.Name} ({RepairCost}g)",
+                    () => TryRepairWeapon(fighter, fighterWeapon)));
             }
 
             options.Add(new InputOption<Func<bool>>(
@@ -87,9 +87,9 @@ public class Blacksmith
         return false;
     }
 
-    private bool TryRepairWeapon(Fighter fighter)
+    private bool TryRepairWeapon(Fighter fighter, Weapon weapon)
     {
-        if (!fighter.Weapon.CanRepair)
+        if (!weapon.CanRepair)
         {
             Console.WriteLine("Your weapon is already in perfect condition.");
             return true;
@@ -101,9 +101,9 @@ public class Blacksmith
             return true;
         }
 
-        if (fighter.Weapon.TryRepair())
+        if (weapon.TryRepair())
         {
-            Console.WriteLine($"The blacksmith restores your {fighter.Weapon.Name}! Remaining gold: {fighter.Gold}g.");
+            Console.WriteLine($"The blacksmith restores your {weapon.Name}! Remaining gold: {fighter.Gold}g.");
         }
         else
         {
