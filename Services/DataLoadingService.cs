@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 
 namespace fights;
 
@@ -86,8 +87,8 @@ public class DataLoadingService
 
         foreach (var line in FilterDataLines(File.ReadLines(fullPath)))
         {
-            var parts = line.Split(',', 2, StringSplitOptions.TrimEntries);
-            if (parts.Length != 2)
+            var parts = line.Split(',', 3, StringSplitOptions.TrimEntries);
+            if (parts.Length < 2)
             {
                 Console.WriteLine($"Skipping invalid blacksmith offer: '{line}'");
                 continue;
@@ -106,9 +107,17 @@ public class DataLoadingService
                 continue;
             }
 
+            var stateJson = parts.Length == 3 ? parts[2] : null;
+
             try
             {
-                offers.Add((weaponResolver(weaponName), cost));
+                var weapon = weaponResolver(weaponName);
+                if (!string.IsNullOrWhiteSpace(stateJson) && !TryApplyWeaponState(weapon, stateJson))
+                {
+                    Console.WriteLine($"Skipping weapon state for '{weaponName}' due to invalid data.");
+                }
+
+                offers.Add((weapon, cost));
             }
             catch (InvalidOperationException)
             {
@@ -502,6 +511,26 @@ public class DataLoadingService
         catch (Exception ex)
         {
             Console.WriteLine($"Skipping boss '{name}' for level {level}: {ex.Message}");
+        }
+    }
+
+    private static bool TryApplyWeaponState(IWeapon weapon, string stateJson)
+    {
+        try
+        {
+            var state = JsonSerializer.Deserialize<WeaponState>(stateJson);
+            if (state is null)
+            {
+                return false;
+            }
+
+            weapon.RestoreState(state);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to apply weapon state: {ex.Message}");
+            return false;
         }
     }
 
