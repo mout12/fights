@@ -1,5 +1,6 @@
 # Weapon catalog format:
 # WeaponType,Name,Damage[,SelfDamage]
+# BreakableWeapon entries: BreakableWeapon,Name,Damage,BreakChance,BrokenName,BrokenDamage
 Weapon,Fists,1
 Weapon,Stick,1
 Weapon,Dagger,5
@@ -16,3 +17,4 @@ Weapon,Shadow Bow,8
 Weapon,Stone Hammer,9
 Weapon,Flame Breath,12
 Weapon,Soul Drain,15
+BreakableWeapon,Glass Sword,30,5,Broken Glass Sword,3

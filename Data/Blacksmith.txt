@@ -5,3 +5,4 @@ Short Sword,55
 War Axe,80
 Morningstar Flail,110
 Wizard Staff,100
+Glass Sword,200

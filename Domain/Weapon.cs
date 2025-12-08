@@ -8,8 +8,8 @@ public class Weapon : IWeapon
         Damage = damage;
     }
 
-    public string Name { get; }
-    public int Damage { get; }
+    public string Name { get; protected set; }
+    public int Damage { get; protected set; }
 
     public virtual IDamagePayload CreateDamagePayload()
     {

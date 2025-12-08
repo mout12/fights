@@ -289,6 +289,36 @@ public class DataLoadingService
             return new SelfDamagingWeapon(name, damage, selfDamage);
         }
 
+        if (type.Equals(nameof(BreakableWeapon), StringComparison.OrdinalIgnoreCase))
+        {
+            if (parts.Length < 6)
+            {
+                Console.WriteLine($"Skipping breakable weapon '{name}' because required data is missing.");
+                return null;
+            }
+
+            if (!int.TryParse(parts[3], out var breakChance))
+            {
+                Console.WriteLine($"Skipping breakable weapon '{name}' with invalid break chance: '{parts[3]}'");
+                return null;
+            }
+
+            var brokenName = parts[4];
+            if (string.IsNullOrWhiteSpace(brokenName))
+            {
+                Console.WriteLine($"Skipping breakable weapon '{name}' because broken name is missing.");
+                return null;
+            }
+
+            if (!int.TryParse(parts[5], out var brokenDamage))
+            {
+                Console.WriteLine($"Skipping breakable weapon '{name}' with invalid broken damage: '{parts[5]}'");
+                return null;
+            }
+
+            return new BreakableWeapon(name, damage, breakChance, brokenName, brokenDamage);
+        }
+
         Console.WriteLine($"Skipping weapon '{name}' with unknown type '{type}'.");
         return null;
     }
