@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace fights;
 
@@ -59,65 +60,61 @@ public class Fight
 
     private bool ExecuteTurn()
     {
-        var firstStrikeWeapon = _fighterOne.Weapon;
-        var firstStrikePayload = firstStrikeWeapon.CreateDamagePayload();
-        var firstStrikeDealt = _fighterTwo.TakeDamage(firstStrikePayload);
-        var firstStrikeSuffix = firstStrikePayload.IsCritical ? " (critical strike!)" : string.Empty;
-        var selfDamageSuffix = ApplySelfDamage(_fighterOne, firstStrikePayload);
-        Console.WriteLine($"{_fighterOne.Name} attacks with {firstStrikeWeapon.Name} for {firstStrikeDealt} damage{firstStrikeSuffix}{selfDamageSuffix}. {_fighterTwo.Name} has {_fighterTwo.Health} health remaining.");
-
-        if (_fighterTwo.Health <= 0)
+        var playerStrikes = GetStrikeCount(_fighterOne.Weapon);
+        for (var i = 0; i < playerStrikes; i++)
         {
-            Console.WriteLine($"{_fighterTwo.Name} has been defeated!");
-            if (_fighterTwo.Gold > 0)
+            if (PerformStrike(_fighterOne, _fighterTwo, isCounterAttack: false))
             {
-                _fighterOne.GainGold(_fighterTwo.Gold);
-                Console.WriteLine($"{_fighterOne.Name} loots {_fighterTwo.Gold} gold.");
+                return true;
             }
-            Console.WriteLine($"{_fighterOne.Name} wins!");
+        }
+
+        var enemyStrikes = GetStrikeCount(_fighterTwo.Weapon);
+        for (var i = 0; i < enemyStrikes; i++)
+        {
+            if (PerformStrike(_fighterTwo, _fighterOne, isCounterAttack: true))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool PerformStrike(IFighter attacker, IFighter defender, bool isCounterAttack)
+    {
+        var weapon = attacker.Weapon;
+        var payload = weapon.CreateDamagePayload();
+        var damageDealt = defender.TakeDamage(payload);
+        var criticalSuffix = payload.IsCritical ? " (critical strike!)" : string.Empty;
+        var selfDamageSuffix = ApplySelfDamage(attacker, payload);
+        var verb = isCounterAttack ? "retaliates" : "attacks";
+        Console.WriteLine($"{attacker.Name} {verb} with {weapon.Name} for {damageDealt} damage{criticalSuffix}{selfDamageSuffix}. {defender.Name} has {defender.Health} health remaining.");
+
+        if (defender.Health <= 0)
+        {
+            Console.WriteLine($"{defender.Name} has been defeated!");
+            if (defender.Gold > 0)
+            {
+                attacker.GainGold(defender.Gold);
+                Console.WriteLine($"{attacker.Name} loots {defender.Gold} gold.");
+            }
+            Console.WriteLine($"{attacker.Name} wins!");
             return true;
         }
 
-        if (_fighterOne.Health <= 0)
+        if (attacker.Health <= 0)
         {
-            Console.WriteLine($"{_fighterOne.Name}'s reckless attack proves fatal!");
-            if (_fighterOne.Gold > 0)
+            var selfDeathMessage = isCounterAttack
+                ? $"{attacker.Name}'s wild swing backfires!"
+                : $"{attacker.Name}'s reckless attack proves fatal!";
+            Console.WriteLine(selfDeathMessage);
+            if (attacker.Gold > 0)
             {
-                _fighterTwo.GainGold(_fighterOne.Gold);
-                Console.WriteLine($"{_fighterTwo.Name} loots {_fighterOne.Gold} gold.");
+                defender.GainGold(attacker.Gold);
+                Console.WriteLine($"{defender.Name} loots {attacker.Gold} gold.");
             }
-            Console.WriteLine($"{_fighterTwo.Name} wins!");
-            return true;
-        }
-
-        var counterStrikeWeapon = _fighterTwo.Weapon;
-        var counterStrikePayload = counterStrikeWeapon.CreateDamagePayload();
-        var counterStrikeDealt = _fighterOne.TakeDamage(counterStrikePayload);
-        var counterStrikeSuffix = counterStrikePayload.IsCritical ? " (critical strike!)" : string.Empty;
-        var counterSelfDamage = ApplySelfDamage(_fighterTwo, counterStrikePayload);
-        Console.WriteLine($"{_fighterTwo.Name} retaliates with {counterStrikeWeapon.Name} for {counterStrikeDealt} damage{counterStrikeSuffix}{counterSelfDamage}. {_fighterOne.Name} has {_fighterOne.Health} health remaining.");
-
-        if (_fighterOne.Health <= 0)
-        {
-            Console.WriteLine($"{_fighterOne.Name} has been defeated!");
-            if (_fighterOne.Gold > 0)
-            {
-                _fighterTwo.GainGold(_fighterOne.Gold);
-                Console.WriteLine($"{_fighterTwo.Name} loots {_fighterOne.Gold} gold.");
-            }
-            Console.WriteLine($"{_fighterTwo.Name} wins!");
-            return true;
-        }
-
-        if (_fighterTwo.Health <= 0)
-        {
-            Console.WriteLine($"{_fighterTwo.Name}'s wild swing backfires!");
-            if (_fighterTwo.Gold > 0)
-            {
-                _fighterOne.GainGold(_fighterTwo.Gold);
-                Console.WriteLine($"{_fighterOne.Name} loots {_fighterTwo.Gold} gold.");
-            }
-            Console.WriteLine($"{_fighterOne.Name} wins!");
+            Console.WriteLine($"{defender.Name} wins!");
             return true;
         }
 
@@ -140,5 +137,11 @@ public class Fight
         Console.WriteLine("Press any key to continue...");
         Console.ReadKey(intercept: true);
         Console.WriteLine();
+    }
+
+    private static int GetStrikeCount(IWeapon weapon)
+    {
+        ArgumentNullException.ThrowIfNull(weapon);
+        return weapon.Modifiers.OfType<DoubleStrikeWeaponModifier>().Any() ? 2 : 1;
     }
 }

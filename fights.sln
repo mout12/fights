@@ -52,6 +52,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WeaponModifiers", "WeaponModifiers", "{B5F1C5B2-0CE4-4A77-8D9C-E7B1BFD4A655}"
 	ProjectSection(SolutionItems) = preProject
 		Domain\WeaponModifiers\BreakableWeaponModifier.cs = Domain\WeaponModifiers\BreakableWeaponModifier.cs
+		Domain\WeaponModifiers\DoubleStrikeWeaponModifier.cs = Domain\WeaponModifiers\DoubleStrikeWeaponModifier.cs
 		Domain\WeaponModifiers\IRepairableWeaponModifier.cs = Domain\WeaponModifiers\IRepairableWeaponModifier.cs
 		Domain\WeaponModifiers\IWeaponModifier.cs = Domain\WeaponModifiers\IWeaponModifier.cs
 		Domain\WeaponModifiers\RepairWeaponModifier.cs = Domain\WeaponModifiers\RepairWeaponModifier.cs

@@ -20,5 +20,5 @@ Weapon,Shadow Bow,8
 Weapon,Stone Hammer,9
 Weapon,Flame Breath,12
 Weapon,Soul Drain,15
-Weapon,Glass Sword,30,Breakable:5:Broken Glass Sword
+Weapon,Glass Sword,30,Breakable:5:Broken Glass Sword,DoubleStrike
 Weapon,Broken Glass Sword,3,RepairTo:Glass Sword

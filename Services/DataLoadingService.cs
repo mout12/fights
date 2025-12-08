@@ -426,6 +426,17 @@ public class DataLoadingService
             return true;
         }
 
+        if (modifierType.Equals("DoubleStrike", StringComparison.OrdinalIgnoreCase))
+        {
+            if (modifierParts.Length != 1)
+            {
+                return false;
+            }
+
+            modifier = new DoubleStrikeWeaponModifier();
+            return true;
+        }
+
         return false;
     }
 
