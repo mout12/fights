@@ -1,12 +1,14 @@
 # Weapon catalog format:
-# WeaponType,Name,Damage[,SelfDamage]
-# BreakableWeapon entries: BreakableWeapon,Name,Damage,BreakChance,BrokenName,BrokenDamage
+# Weapon,Name,Damage[,Modifier...]
+# Modifiers are optional and use the format:
+#   SelfDamage:<amount>
+#   Breakable:<chance>:<BrokenName>:<BrokenDamage>
 Weapon,Fists,1
 Weapon,Stick,1
 Weapon,Dagger,5
 Weapon,Short Sword,7
 Weapon,War Axe,9
-SelfDamagingWeapon,Morningstar Flail,12,1
+Weapon,Morningstar Flail,12,SelfDamage:1
 Weapon,Wizard Staff,11
 Weapon,Rusty Blade,4
 Weapon,Fangs,5
@@ -17,4 +19,4 @@ Weapon,Shadow Bow,8
 Weapon,Stone Hammer,9
 Weapon,Flame Breath,12
 Weapon,Soul Drain,15
-BreakableWeapon,Glass Sword,30,5,Broken Glass Sword,3
+Weapon,Glass Sword,30,Breakable:5:Broken Glass Sword:3
