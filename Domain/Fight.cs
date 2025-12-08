@@ -83,6 +83,11 @@ public class Fight
 
     private static bool PerformStrike(IFighter attacker, IFighter defender, bool isCounterAttack)
     {
+        if (ResolvePoisonDamage(attacker, defender))
+        {
+            return true;
+        }
+
         var weapon = attacker.Weapon;
         var payload = weapon.CreateDamagePayload();
         var damageDealt = defender.TakeDamage(payload);
@@ -90,17 +95,11 @@ public class Fight
         var selfDamageSuffix = ApplySelfDamage(attacker, payload);
         var verb = isCounterAttack ? "retaliates" : "attacks";
         Console.WriteLine($"{attacker.Name} {verb} with {weapon.Name} for {damageDealt} damage{criticalSuffix}{selfDamageSuffix}. {defender.Name} has {defender.Health} health remaining.");
+        TryInflictPoison(defender, payload.PoisonToApply);
 
         if (defender.Health <= 0)
         {
-            Console.WriteLine($"{defender.Name} has been defeated!");
-            if (defender.Gold > 0)
-            {
-                attacker.GainGold(defender.Gold);
-                Console.WriteLine($"{attacker.Name} loots {defender.Gold} gold.");
-            }
-            Console.WriteLine($"{attacker.Name} wins!");
-            return true;
+            return HandleVictory(attacker, defender, $"{defender.Name} has been defeated!");
         }
 
         if (attacker.Health <= 0)
@@ -108,14 +107,7 @@ public class Fight
             var selfDeathMessage = isCounterAttack
                 ? $"{attacker.Name}'s wild swing backfires!"
                 : $"{attacker.Name}'s reckless attack proves fatal!";
-            Console.WriteLine(selfDeathMessage);
-            if (attacker.Gold > 0)
-            {
-                defender.GainGold(attacker.Gold);
-                Console.WriteLine($"{defender.Name} loots {attacker.Gold} gold.");
-            }
-            Console.WriteLine($"{defender.Name} wins!");
-            return true;
+            return HandleVictory(defender, attacker, selfDeathMessage);
         }
 
         return false;
@@ -143,5 +135,70 @@ public class Fight
     {
         ArgumentNullException.ThrowIfNull(weapon);
         return weapon.Modifiers.OfType<DoubleStrikeWeaponModifier>().Any() ? 2 : 1;
+    }
+
+    private static bool ResolvePoisonDamage(IFighter fighter, IFighter opponent)
+    {
+        var poisonTick = fighter.TickPoison();
+        if (!poisonTick.HadPoison)
+        {
+            return false;
+        }
+
+        if (poisonTick.Damage > 0)
+        {
+            fighter.TakeSelfDamage(poisonTick.Damage);
+            var remainingSuffix = poisonTick.RemainingTurns > 0
+                ? $" ({poisonTick.RemainingTurns} turns of poison remain)"
+                : string.Empty;
+            Console.WriteLine($"{fighter.Name} suffers {poisonTick.Damage} poison damage{remainingSuffix}.");
+
+            if (fighter.Health <= 0)
+            {
+                return HandleVictory(opponent, fighter, $"{fighter.Name} succumbs to the poison!");
+            }
+        }
+
+        if (poisonTick.RemainingTurns <= 0)
+        {
+            Console.WriteLine($"{fighter.Name} is no longer poisoned.");
+        }
+
+        return false;
+    }
+
+    private static void TryInflictPoison(IFighter defender, PoisonState? poison)
+    {
+        if (poison is null || !poison.Value.HasEffect)
+        {
+            return;
+        }
+
+        var previousState = defender.ActivePoison;
+        defender.ApplyPoison(poison.Value);
+        var currentState = defender.ActivePoison;
+        if (currentState is null)
+        {
+            return;
+        }
+
+        var message = previousState is null
+            ? $"{defender.Name} is poisoned!"
+            : $"{defender.Name}'s poison worsens!";
+
+        var snapshot = currentState.Value;
+        Console.WriteLine($"{message} {snapshot.DamagePerTurn} damage for {snapshot.RemainingTurns} turns ({snapshot.TickChancePercent}% chance each turn).");
+    }
+
+    private static bool HandleVictory(IFighter winner, IFighter loser, string defeatMessage)
+    {
+        Console.WriteLine(defeatMessage);
+        if (loser.Gold > 0)
+        {
+            winner.GainGold(loser.Gold);
+            Console.WriteLine($"{winner.Name} loots {loser.Gold} gold.");
+        }
+        Console.WriteLine($"{winner.Name} wins!");
+        return true;
     }
 }

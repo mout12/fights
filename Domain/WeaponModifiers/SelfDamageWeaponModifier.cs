@@ -31,7 +31,12 @@ public sealed class SelfDamageWeaponModifier : IWeaponModifier
             return payload;
         }
 
-        return new DamagePayload(payload.Damage, payload.SelfDamage + _selfDamage, payload.IsCritical);
+        if (payload is DamagePayload concrete)
+        {
+            return concrete.WithSelfDamage(payload.SelfDamage + _selfDamage);
+        }
+
+        return new DamagePayload(payload.Damage, payload.SelfDamage + _selfDamage, payload.IsCritical, payload.PoisonToApply);
     }
 
     public IWeaponModifier Clone() => new SelfDamageWeaponModifier(_selfDamage);

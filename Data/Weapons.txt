@@ -4,6 +4,7 @@
 #   SelfDamage:<amount>
 #   Breakable:<chance>:<BrokenWeaponKey>
 #   RepairTo:<WeaponKey>
+#   Poison:<applyChancePercent>:<tickChancePercent>:<damagePerTurn>:<turns>
 Weapon,Fists,1
 Weapon,Stick,1
 Weapon,Dagger,5
@@ -14,6 +15,7 @@ Weapon,Wizard Staff,11
 Weapon,Rusty Blade,4
 Weapon,Fangs,5
 Weapon,Shiv,6
+Weapon,Poison Dart,4,Poison:40:60:3:4
 Weapon,Heavy Club,7
 Weapon,Ancient Sword,6
 Weapon,Shadow Bow,8

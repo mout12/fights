@@ -6,5 +6,6 @@ Short Sword,55
 War Axe,80
 Morningstar Flail,110
 Wizard Staff,100
+Poison Dart,85
 Glass Sword,200
 Broken Glass Sword,120

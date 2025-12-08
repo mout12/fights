@@ -437,6 +437,37 @@ public class DataLoadingService
             return true;
         }
 
+        if (modifierType.Equals("Poison", StringComparison.OrdinalIgnoreCase))
+        {
+            if (modifierParts.Length != 5)
+            {
+                return false;
+            }
+
+            if (!int.TryParse(modifierParts[1], out var applyChance) || applyChance < 1 || applyChance > 100)
+            {
+                return false;
+            }
+
+            if (!int.TryParse(modifierParts[2], out var tickChance) || tickChance < 1 || tickChance > 100)
+            {
+                return false;
+            }
+
+            if (!int.TryParse(modifierParts[3], out var damagePerTurn) || damagePerTurn < 1)
+            {
+                return false;
+            }
+
+            if (!int.TryParse(modifierParts[4], out var durationTurns) || durationTurns < 1)
+            {
+                return false;
+            }
+
+            modifier = new PoisonWeaponModifier(applyChance, tickChance, damagePerTurn, durationTurns);
+            return true;
+        }
+
         return false;
     }
 

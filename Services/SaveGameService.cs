@@ -40,7 +40,10 @@ public class SaveGameService
             $"WeaponTemplate={player.Weapon.TemplateName}",
             $"WeaponState={SerializeWeaponState(player.Weapon)}",
             $"ArmorName={player.Armor.Name}",
-            $"Gold={player.Gold}"
+            $"Gold={player.Gold}",
+            $"PoisonTickChance={player.ActivePoison?.TickChancePercent ?? 0}",
+            $"PoisonDamage={player.ActivePoison?.DamagePerTurn ?? 0}",
+            $"PoisonTurns={player.ActivePoison?.RemainingTurns ?? 0}"
         };
 
         File.WriteAllLines(_saveFilePath, lines);
@@ -85,6 +88,7 @@ public class SaveGameService
             var armor = GetArmorByName(armorName);
             var player = new Player(name, level, maxHealth, weapon, armor, gold);
             player.RestoreHealth(health, maxHealth);
+            player.RestorePoison(TryGetPoisonState(data));
 
             return player;
         }
@@ -149,6 +153,33 @@ public class SaveGameService
         return data.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value)
             ? value
             : null;
+    }
+
+    private static int GetOptionalInt(Dictionary<string, string> data, string key, int defaultValue = 0)
+    {
+        return data.TryGetValue(key, out var value) && int.TryParse(value, out var result)
+            ? result
+            : defaultValue;
+    }
+
+    private static PoisonState? TryGetPoisonState(Dictionary<string, string> data)
+    {
+        var remainingTurns = GetOptionalInt(data, "PoisonTurns");
+        if (remainingTurns <= 0)
+        {
+            return null;
+        }
+
+        var tickChance = GetOptionalInt(data, "PoisonTickChance");
+        var damage = GetOptionalInt(data, "PoisonDamage");
+        try
+        {
+            return new PoisonState(tickChance, damage, remainingTurns);
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private static string SerializeWeaponState(IWeapon weapon)
