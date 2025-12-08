@@ -36,7 +36,7 @@ public sealed class BreakableWeaponModifier : IWeaponModifier
     {
         ArgumentNullException.ThrowIfNull(weapon);
 
-        _originalName ??= weapon.Name;
+        _originalName ??= weapon.TemplateName;
 
         if (_isBroken)
         {
@@ -58,5 +58,20 @@ public sealed class BreakableWeaponModifier : IWeaponModifier
         ArgumentNullException.ThrowIfNull(weapon);
         ArgumentNullException.ThrowIfNull(payload);
         return payload;
+    }
+
+    public IWeaponModifier Clone() => new BreakableWeaponModifier(_breakChance, _brokenName, _brokenDamage);
+
+    public string? CaptureState(Weapon weapon)
+    {
+        ArgumentNullException.ThrowIfNull(weapon);
+        return _isBroken ? "broken" : null;
+    }
+
+    public void RestoreState(Weapon weapon, string? state)
+    {
+        ArgumentNullException.ThrowIfNull(weapon);
+        _originalName = weapon.TemplateName;
+        _isBroken = string.Equals(state, "broken", StringComparison.OrdinalIgnoreCase);
     }
 }

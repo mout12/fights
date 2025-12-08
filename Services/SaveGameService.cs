@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 
 namespace fights;
 
@@ -36,6 +37,8 @@ public class SaveGameService
             $"Health={player.Health}",
             $"MaxHealth={player.MaxHealth}",
             $"WeaponName={player.Weapon.Name}",
+            $"WeaponTemplate={player.Weapon.TemplateName}",
+            $"WeaponState={SerializeWeaponState(player.Weapon)}",
             $"ArmorName={player.Armor.Name}",
             $"Gold={player.Gold}"
         };
@@ -60,10 +63,25 @@ public class SaveGameService
             var health = GetInt(data, "Health");
             var maxHealth = GetInt(data, "MaxHealth");
             var weaponName = GetString(data, "WeaponName");
+            var weaponTemplate = GetOptionalString(data, "WeaponTemplate") ?? weaponName;
+            var weaponStateJson = GetOptionalString(data, "WeaponState");
             var armorName = GetString(data, "ArmorName");
             var gold = GetUint(data, "Gold");
 
-            var weapon = GetWeaponByName(weaponName);
+            var weapon = GetWeaponByName(weaponTemplate);
+            if (!string.IsNullOrWhiteSpace(weaponStateJson))
+            {
+                var weaponState = DeserializeWeaponState(weaponStateJson);
+                if (weaponState is not null)
+                {
+                    weapon.RestoreState(weaponState);
+                }
+            }
+            else if (!string.Equals(weaponName, weapon.TemplateName, StringComparison.OrdinalIgnoreCase))
+            {
+                weapon.RestoreState(new WeaponState(weapon.TemplateName, weaponName, weapon.Damage, Array.Empty<string?>()));
+            }
+
             var armor = GetArmorByName(armorName);
             var player = new Player(name, level, maxHealth, weapon, armor, gold);
             player.RestoreHealth(health, maxHealth);
@@ -126,6 +144,32 @@ public class SaveGameService
         return result;
     }
 
+    private static string? GetOptionalString(Dictionary<string, string> data, string key)
+    {
+        return data.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value)
+            ? value
+            : null;
+    }
+
+    private static string SerializeWeaponState(IWeapon weapon)
+    {
+        ArgumentNullException.ThrowIfNull(weapon);
+        var state = weapon.CaptureState();
+        return JsonSerializer.Serialize(state);
+    }
+
+    private static WeaponState? DeserializeWeaponState(string json)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<WeaponState>(json);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     private IWeapon GetWeaponByName(string name)
     {
         if (!_weaponCatalog.TryGetValue(name, out var weapon))
@@ -133,7 +177,7 @@ public class SaveGameService
             throw new InvalidDataException($"Unknown weapon '{name}' in save file.");
         }
 
-        return weapon;
+        return weapon.Clone();
     }
 
     private IArmor GetArmorByName(string name)

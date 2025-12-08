@@ -33,4 +33,17 @@ public sealed class SelfDamageWeaponModifier : IWeaponModifier
 
         return new DamagePayload(payload.Damage, payload.SelfDamage + _selfDamage, payload.IsCritical);
     }
+
+    public IWeaponModifier Clone() => new SelfDamageWeaponModifier(_selfDamage);
+
+    public string? CaptureState(Weapon weapon)
+    {
+        ArgumentNullException.ThrowIfNull(weapon);
+        return null;
+    }
+
+    public void RestoreState(Weapon weapon, string? state)
+    {
+        ArgumentNullException.ThrowIfNull(weapon);
+    }
 }

@@ -8,7 +8,7 @@ var armorCatalog = new Dictionary<string, IArmor>(StringComparer.OrdinalIgnoreCa
 
 IWeapon RegisterWeapon(IWeapon weapon)
 {
-    weaponCatalog[weapon.Name] = weapon;
+    weaponCatalog[weapon.TemplateName] = weapon;
     return weapon;
 }
 
@@ -19,7 +19,7 @@ IWeapon GetWeapon(string name)
         throw new InvalidOperationException($"Unknown weapon '{name}'.");
     }
 
-    return weapon;
+    return weapon.Clone();
 }
 
 IArmor RegisterArmor(IArmor armor)

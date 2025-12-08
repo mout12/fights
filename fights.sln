@@ -29,6 +29,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Contracts", "Contracts", "{
 		Contracts\IFighter.cs = Contracts\IFighter.cs
 		Contracts\ILevel.cs = Contracts\ILevel.cs
 		Contracts\IWeapon.cs = Contracts\IWeapon.cs
+		Contracts\WeaponState.cs = Contracts\WeaponState.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{D6138EAA-68F4-4A0E-A237-47AADFAE74B4}"
