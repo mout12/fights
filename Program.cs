@@ -8,6 +8,11 @@ var armorCatalog = new Dictionary<string, IArmor>(StringComparer.OrdinalIgnoreCa
 
 IWeapon RegisterWeapon(IWeapon weapon)
 {
+    if (weapon is Weapon concreteWeapon)
+    {
+        concreteWeapon.SetWeaponResolver(GetWeapon);
+    }
+
     weaponCatalog[weapon.TemplateName] = weapon;
     return weapon;
 }

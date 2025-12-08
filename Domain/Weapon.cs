@@ -6,7 +6,9 @@ namespace fights;
 
 public class Weapon : IWeapon
 {
-    private readonly int _baseDamage;
+    private readonly List<IWeaponModifier> _modifiers;
+    private int _baseDamage;
+    private Func<string, IWeapon>? _weaponResolver;
 
     public Weapon(string name, int damage, IEnumerable<IWeaponModifier>? modifiers = null)
     {
@@ -24,14 +26,19 @@ public class Weapon : IWeapon
         Name = name;
         Damage = damage;
         _baseDamage = damage;
-        Modifiers = modifiers is null ? new List<IWeaponModifier>() : new List<IWeaponModifier>(modifiers);
+        _modifiers = modifiers is null ? new List<IWeaponModifier>() : new List<IWeaponModifier>(modifiers);
     }
 
-    public string TemplateName { get; }
+    public string TemplateName { get; private set; }
     public string Name { get; private set; }
     public int Damage { get; private set; }
-    public IList<IWeaponModifier> Modifiers { get; }
-    internal bool CanRepair => Modifiers.OfType<IRepairableWeaponModifier>().Any(m => m.CanRepair(this));
+    public IList<IWeaponModifier> Modifiers => _modifiers;
+    internal bool CanRepair => _modifiers.OfType<IRepairableWeaponModifier>().Any(m => m.CanRepair(this));
+
+    internal void SetWeaponResolver(Func<string, IWeapon> weaponResolver)
+    {
+        _weaponResolver = weaponResolver ?? throw new ArgumentNullException(nameof(weaponResolver));
+    }
 
     internal void UpdateState(string? newName = null, int? newDamage = null)
     {
@@ -59,7 +66,7 @@ public class Weapon : IWeapon
 
     public virtual IDamagePayload CreateDamagePayload()
     {
-        foreach (var modifier in Modifiers)
+        foreach (var modifier in _modifiers)
         {
             modifier.BeforeAttack(this);
         }
@@ -68,7 +75,7 @@ public class Weapon : IWeapon
         var damage = isCritical ? Damage * 2 : Damage;
         IDamagePayload payload = new DamagePayload(damage, selfDamage: 0, isCritical);
 
-        foreach (var modifier in Modifiers)
+        foreach (var modifier in _modifiers)
         {
             payload = modifier.ModifyPayload(this, payload);
         }
@@ -79,7 +86,7 @@ public class Weapon : IWeapon
     internal bool TryRepair()
     {
         var repaired = false;
-        foreach (var modifier in Modifiers.OfType<IRepairableWeaponModifier>())
+        foreach (var modifier in _modifiers.OfType<IRepairableWeaponModifier>())
         {
             if (modifier.TryRepair(this))
             {
@@ -92,8 +99,8 @@ public class Weapon : IWeapon
 
     public WeaponState CaptureState()
     {
-        var modifierStates = new List<string?>(Modifiers.Count);
-        foreach (var modifier in Modifiers)
+        var modifierStates = new List<string?>(_modifiers.Count);
+        foreach (var modifier in _modifiers)
         {
             modifierStates.Add(modifier.CaptureState(this));
         }
@@ -112,18 +119,18 @@ public class Weapon : IWeapon
 
         UpdateState(state.Name, state.Damage);
 
-        var modifierCount = Modifiers.Count;
+        var modifierCount = _modifiers.Count;
         for (var i = 0; i < modifierCount; i++)
         {
             var modifierState = i < state.ModifierStates.Count ? state.ModifierStates[i] : null;
-            Modifiers[i].RestoreState(this, modifierState);
+            _modifiers[i].RestoreState(this, modifierState);
         }
     }
 
     public IWeapon Clone()
     {
-        var clonedModifiers = new List<IWeaponModifier>(Modifiers.Count);
-        foreach (var modifier in Modifiers)
+        var clonedModifiers = new List<IWeaponModifier>(_modifiers.Count);
+        foreach (var modifier in _modifiers)
         {
             clonedModifiers.Add(modifier.Clone());
         }
@@ -131,6 +138,48 @@ public class Weapon : IWeapon
         var clone = new Weapon(TemplateName, _baseDamage, clonedModifiers);
         var state = CaptureState();
         clone.RestoreState(state);
+        if (_weaponResolver is not null)
+        {
+            clone.SetWeaponResolver(_weaponResolver);
+        }
         return clone;
+    }
+
+    internal bool TryReplaceWith(string weaponKey)
+    {
+        if (string.IsNullOrWhiteSpace(weaponKey) || _weaponResolver is null)
+        {
+            return false;
+        }
+
+        try
+        {
+            var replacement = _weaponResolver(weaponKey);
+            if (replacement is not Weapon replacementWeapon)
+            {
+                return false;
+            }
+
+            ApplyTemplate(replacementWeapon);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private void ApplyTemplate(Weapon template)
+    {
+        TemplateName = template.TemplateName;
+        Name = template.Name;
+        Damage = template.Damage;
+        _baseDamage = template._baseDamage;
+
+        _modifiers.Clear();
+        foreach (var modifier in template.Modifiers)
+        {
+            _modifiers.Add(modifier.Clone());
+        }
     }
 }

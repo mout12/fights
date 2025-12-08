@@ -7,4 +7,4 @@ War Axe,80
 Morningstar Flail,110
 Wizard Staff,100
 Glass Sword,200
-Glass Sword,120,{"TemplateName":"Glass Sword","Name":"Broken Glass Sword","Damage":3,"ModifierStates":["broken"]}
+Broken Glass Sword,120

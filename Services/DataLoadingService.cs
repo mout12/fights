@@ -322,13 +322,13 @@ public class DataLoadingService
                 return null;
             }
 
-            if (!int.TryParse(parts[5], out var brokenDamageLegacy))
+            if (!int.TryParse(parts[5], out _))
             {
                 Console.WriteLine($"Skipping breakable weapon '{name}' with invalid broken damage: '{parts[5]}'");
                 return null;
             }
 
-            modifiers.Add(new BreakableWeaponModifier(breakChance, brokenNameLegacy, brokenDamageLegacy));
+            modifiers.Add(new BreakableWeaponModifier(breakChance, brokenNameLegacy));
             nextModifierIndex = 6;
             type = nameof(Weapon);
         }
@@ -389,7 +389,7 @@ public class DataLoadingService
 
         if (modifierType.Equals("Breakable", StringComparison.OrdinalIgnoreCase))
         {
-            if (modifierParts.Length != 4)
+            if (modifierParts.Length < 3)
             {
                 return false;
             }
@@ -399,18 +399,30 @@ public class DataLoadingService
                 return false;
             }
 
-            var brokenName = modifierParts[2];
-            if (string.IsNullOrWhiteSpace(brokenName))
+            var brokenWeaponKey = modifierParts[2];
+            if (string.IsNullOrWhiteSpace(brokenWeaponKey))
             {
                 return false;
             }
 
-            if (!int.TryParse(modifierParts[3], out var brokenDamage) || brokenDamage < 1)
+            modifier = new BreakableWeaponModifier(breakChance, brokenWeaponKey);
+            return true;
+        }
+
+        if (modifierType.Equals("RepairTo", StringComparison.OrdinalIgnoreCase))
+        {
+            if (modifierParts.Length != 2)
             {
                 return false;
             }
 
-            modifier = new BreakableWeaponModifier(breakChance, brokenName, brokenDamage);
+            var repairedWeaponKey = modifierParts[1];
+            if (string.IsNullOrWhiteSpace(repairedWeaponKey))
+            {
+                return false;
+            }
+
+            modifier = new RepairWeaponModifier(repairedWeaponKey);
             return true;
         }
 
