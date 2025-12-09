@@ -70,11 +70,15 @@ var playerTemplates = dataLoader.LoadPlayerTemplates(newGamePath, GetWeapon, Get
 Player CreateNewPlayer()
 {
     var options = new List<InputOption<Func<Player>>>(playerTemplates.Count);
-    foreach (var template in playerTemplates)
+foreach (var template in playerTemplates)
+{
+    var description = $"{template.Title}: Level {template.Level} {template.CharacterName} ({template.Health}/{template.MaxHealth} HP, {template.WeaponName}/{template.ArmorName}, {template.Gold}g)";
+    if (template.PoisonPreview is { } poison)
     {
-        var description = $"{template.Title}: Level {template.Level} {template.CharacterName} ({template.Health}/{template.MaxHealth} HP, {template.WeaponName}/{template.ArmorName}, {template.Gold}g)";
-        options.Add(new InputOption<Func<Player>>(description, () => template.CreatePlayer(GetWeapon, GetArmor)));
+        description += $" [Poisoned: {poison.DamagePerTurn} dmg for {poison.RemainingTurns} turns at {poison.TickChancePercent}%]";
     }
+    options.Add(new InputOption<Func<Player>>(description, () => template.CreatePlayer(GetWeapon, GetArmor)));
+}
 
     var selection = inputSelector.SelectOption("Choose your adventurer:", options);
     return selection();

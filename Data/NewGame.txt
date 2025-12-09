@@ -1,9 +1,6 @@
-# Player templates allow selecting different starting builds.
-# Each template is wrapped in [Player] ... [/Player] and supports:
-#   TemplateName (optional display label)
-#   Name, Level, Health, MaxHealth, WeaponName, ArmorName, Gold
+# Each player entry mirrors the savegame format (key=value pairs) and entries are separated by blank lines.
 
-[Player]
+# Balanced starter
 TemplateName=Balanced Brawler
 Name=Jackson
 Level=1
@@ -12,9 +9,8 @@ MaxHealth=100
 WeaponName=Fists
 ArmorName=Cloth Shirt
 Gold=1000
-[/Player]
 
-[Player]
+# Glass cannon build
 TemplateName=Glass Cannon
 Name=Lyra
 Level=1
@@ -23,10 +19,9 @@ MaxHealth=70
 WeaponName=Glass Sword
 ArmorName=Cloth Shirt
 Gold=200
-[/Player]
 
-[Player]
-TemplateName=Poison Tester
+# Poisoned testing character
+TemplateName=Poisoned Victim
 Name=Salazar
 Level=1
 Health=85
@@ -34,4 +29,6 @@ MaxHealth=85
 WeaponName=Poison Dart
 ArmorName=Cloth Shirt
 Gold=500
-[/Player]
+PoisonTickChance=60
+PoisonDamage=3
+PoisonTurns=4

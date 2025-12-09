@@ -61,36 +61,7 @@ public class SaveGameService
             var lines = File.ReadAllLines(_saveFilePath);
             var data = ParseLines(lines);
 
-            var name = GetString(data, "Name");
-            var level = GetInt(data, "Level");
-            var health = GetInt(data, "Health");
-            var maxHealth = GetInt(data, "MaxHealth");
-            var weaponName = GetString(data, "WeaponName");
-            var weaponTemplate = GetOptionalString(data, "WeaponTemplate") ?? weaponName;
-            var weaponStateJson = GetOptionalString(data, "WeaponState");
-            var armorName = GetString(data, "ArmorName");
-            var gold = GetUint(data, "Gold");
-
-            var weapon = GetWeaponByName(weaponTemplate);
-            if (!string.IsNullOrWhiteSpace(weaponStateJson))
-            {
-                var weaponState = DeserializeWeaponState(weaponStateJson);
-                if (weaponState is not null)
-                {
-                    weapon.RestoreState(weaponState);
-                }
-            }
-            else if (!string.Equals(weaponName, weapon.TemplateName, StringComparison.OrdinalIgnoreCase))
-            {
-                weapon.RestoreState(new WeaponState(weapon.TemplateName, weaponName, weapon.Damage, Array.Empty<string?>()));
-            }
-
-            var armor = GetArmorByName(armorName);
-            var player = new Player(name, level, maxHealth, weapon, armor, gold);
-            player.RestoreHealth(health, maxHealth);
-            player.RestorePoison(TryGetPoisonState(data));
-
-            return player;
+            return PlayerDataParser.CreatePlayer(data, GetWeaponByName, GetArmorByName);
         }
         catch
         {
@@ -118,87 +89,11 @@ public class SaveGameService
         return data;
     }
 
-    private static string GetString(Dictionary<string, string> data, string key)
-    {
-        if (!data.TryGetValue(key, out var value) || string.IsNullOrWhiteSpace(value))
-        {
-            throw new InvalidDataException($"Missing value for '{key}'.");
-        }
-
-        return value;
-    }
-
-    private static int GetInt(Dictionary<string, string> data, string key)
-    {
-        if (!data.TryGetValue(key, out var value) || !int.TryParse(value, out var result))
-        {
-            throw new InvalidDataException($"Invalid integer for '{key}'.");
-        }
-
-        return result;
-    }
-
-    private static uint GetUint(Dictionary<string, string> data, string key)
-    {
-        if (!data.TryGetValue(key, out var value) || !uint.TryParse(value, out var result))
-        {
-            throw new InvalidDataException($"Invalid unsigned integer for '{key}'.");
-        }
-
-        return result;
-    }
-
-    private static string? GetOptionalString(Dictionary<string, string> data, string key)
-    {
-        return data.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value)
-            ? value
-            : null;
-    }
-
-    private static int GetOptionalInt(Dictionary<string, string> data, string key, int defaultValue = 0)
-    {
-        return data.TryGetValue(key, out var value) && int.TryParse(value, out var result)
-            ? result
-            : defaultValue;
-    }
-
-    private static PoisonState? TryGetPoisonState(Dictionary<string, string> data)
-    {
-        var remainingTurns = GetOptionalInt(data, "PoisonTurns");
-        if (remainingTurns <= 0)
-        {
-            return null;
-        }
-
-        var tickChance = GetOptionalInt(data, "PoisonTickChance");
-        var damage = GetOptionalInt(data, "PoisonDamage");
-        try
-        {
-            return new PoisonState(tickChance, damage, remainingTurns);
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
     private static string SerializeWeaponState(IWeapon weapon)
     {
         ArgumentNullException.ThrowIfNull(weapon);
         var state = weapon.CaptureState();
         return JsonSerializer.Serialize(state);
-    }
-
-    private static WeaponState? DeserializeWeaponState(string json)
-    {
-        try
-        {
-            return JsonSerializer.Deserialize<WeaponState>(json);
-        }
-        catch
-        {
-            return null;
-        }
     }
 
     private IWeapon GetWeaponByName(string name)

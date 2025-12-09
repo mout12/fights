@@ -176,7 +176,7 @@ public class DataLoadingService
         ArgumentNullException.ThrowIfNull(armorResolver);
 
         var fullPath = EnsureFileExists(filePath, "New game template");
-        var sections = ParsePlayerTemplateSections(File.ReadLines(fullPath));
+        var sections = ParsePlayerTemplateEntries(File.ReadLines(fullPath));
         if (sections.Count == 0)
         {
             throw new InvalidDataException("No player templates were found in the new game data.");
@@ -632,42 +632,26 @@ public class DataLoadingService
         return data;
     }
 
-    private static List<Dictionary<string, string>> ParsePlayerTemplateSections(IEnumerable<string> lines)
+    private static List<Dictionary<string, string>> ParsePlayerTemplateEntries(IEnumerable<string> lines)
     {
         var sections = new List<Dictionary<string, string>>();
-        Dictionary<string, string>? currentSection = null;
+        var currentSection = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var rawLine in lines)
         {
             var trimmed = rawLine.Trim();
-            if (string.IsNullOrEmpty(trimmed) || trimmed.StartsWith("#", StringComparison.Ordinal))
+            if (string.IsNullOrEmpty(trimmed))
             {
-                continue;
-            }
-
-            if (trimmed.Equals("[Player]", StringComparison.OrdinalIgnoreCase))
-            {
-                if (currentSection is not null && currentSection.Count > 0)
+                if (currentSection.Count > 0)
                 {
                     sections.Add(currentSection);
+                    currentSection = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 }
 
-                currentSection = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 continue;
             }
 
-            if (trimmed.Equals("[/Player]", StringComparison.OrdinalIgnoreCase))
-            {
-                if (currentSection is not null && currentSection.Count > 0)
-                {
-                    sections.Add(currentSection);
-                }
-
-                currentSection = null;
-                continue;
-            }
-
-            if (currentSection is null)
+            if (trimmed.StartsWith("#", StringComparison.Ordinal))
             {
                 continue;
             }
@@ -679,7 +663,7 @@ public class DataLoadingService
             }
         }
 
-        if (currentSection is not null && currentSection.Count > 0)
+        if (currentSection.Count > 0)
         {
             sections.Add(currentSection);
         }
@@ -692,51 +676,17 @@ public class DataLoadingService
         Func<string, IWeapon> weaponResolver,
         Func<string, IArmor> armorResolver)
     {
-        var name = GetRequiredString(data, "Name");
-        var title = data.TryGetValue("TemplateName", out var templateName) && !string.IsNullOrWhiteSpace(templateName)
-            ? templateName
-            : name;
-        var level = GetRequiredInt(data, "Level");
-        var health = GetRequiredInt(data, "Health");
-        var maxHealth = GetRequiredInt(data, "MaxHealth");
-        var weaponName = GetRequiredString(data, "WeaponName");
-        var armorName = GetRequiredString(data, "ArmorName");
-        var gold = GetRequiredUint(data, "Gold");
+        var snapshot = new Dictionary<string, string>(data, StringComparer.OrdinalIgnoreCase);
+
+        var weaponTemplate = PlayerDataParser.GetOptionalString(snapshot, "WeaponTemplate")
+            ?? PlayerDataParser.GetRequiredString(snapshot, "WeaponName");
+        var armorName = PlayerDataParser.GetRequiredString(snapshot, "ArmorName");
 
         // Validate references early
-        weaponResolver(weaponName);
+        weaponResolver(weaponTemplate);
         armorResolver(armorName);
 
-        return new PlayerTemplate(title, name, level, health, maxHealth, weaponName, armorName, gold);
+        return new PlayerTemplate(snapshot);
     }
 
-    private static string GetRequiredString(Dictionary<string, string> data, string key)
-    {
-        if (!data.TryGetValue(key, out var value) || string.IsNullOrWhiteSpace(value))
-        {
-            throw new InvalidDataException($"Missing value for '{key}' in new game template.");
-        }
-
-        return value;
-    }
-
-    private static int GetRequiredInt(Dictionary<string, string> data, string key)
-    {
-        if (!data.TryGetValue(key, out var value) || !int.TryParse(value, out var result))
-        {
-            throw new InvalidDataException($"Invalid integer for '{key}' in new game template.");
-        }
-
-        return result;
-    }
-
-    private static uint GetRequiredUint(Dictionary<string, string> data, string key)
-    {
-        if (!data.TryGetValue(key, out var value) || !uint.TryParse(value, out var result))
-        {
-            throw new InvalidDataException($"Invalid unsigned integer for '{key}' in new game template.");
-        }
-
-        return result;
-    }
 }
