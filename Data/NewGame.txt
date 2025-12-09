@@ -1,4 +1,10 @@
-# New game template in save format
+# Player templates allow selecting different starting builds.
+# Each template is wrapped in [Player] ... [/Player] and supports:
+#   TemplateName (optional display label)
+#   Name, Level, Health, MaxHealth, WeaponName, ArmorName, Gold
+
+[Player]
+TemplateName=Balanced Brawler
 Name=Jackson
 Level=1
 Health=100
@@ -6,3 +12,26 @@ MaxHealth=100
 WeaponName=Fists
 ArmorName=Cloth Shirt
 Gold=1000
+[/Player]
+
+[Player]
+TemplateName=Glass Cannon
+Name=Lyra
+Level=1
+Health=70
+MaxHealth=70
+WeaponName=Glass Sword
+ArmorName=Cloth Shirt
+Gold=200
+[/Player]
+
+[Player]
+TemplateName=Poison Tester
+Name=Salazar
+Level=1
+Health=85
+MaxHealth=85
+WeaponName=Poison Dart
+ArmorName=Cloth Shirt
+Gold=500
+[/Player]

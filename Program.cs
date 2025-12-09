@@ -64,11 +64,20 @@ var armorerDataPath = Path.Combine(AppContext.BaseDirectory, "Data", "Armorer.tx
 var armorOffers = dataLoader.LoadArmorerOffers(armorerDataPath, GetArmor);
 var levelsDataPath = Path.Combine(AppContext.BaseDirectory, "Data", "Levels.txt");
 var levelSetups = dataLoader.LoadLevelSetups(levelsDataPath, GetWeapon, GetArmor);
+var newGamePath = Path.Combine(AppContext.BaseDirectory, "Data", "NewGame.txt");
+var playerTemplates = dataLoader.LoadPlayerTemplates(newGamePath, GetWeapon, GetArmor);
 
 Player CreateNewPlayer()
 {
-    var newGamePath = Path.Combine(AppContext.BaseDirectory, "Data", "NewGame.txt");
-    return dataLoader.LoadPlayerTemplate(newGamePath, GetWeapon, GetArmor);
+    var options = new List<InputOption<Func<Player>>>(playerTemplates.Count);
+    foreach (var template in playerTemplates)
+    {
+        var description = $"{template.Title}: Level {template.Level} {template.CharacterName} ({template.Health}/{template.MaxHealth} HP, {template.WeaponName}/{template.ArmorName}, {template.Gold}g)";
+        options.Add(new InputOption<Func<Player>>(description, () => template.CreatePlayer(GetWeapon, GetArmor)));
+    }
+
+    var selection = inputSelector.SelectOption("Choose your adventurer:", options);
+    return selection();
 }
 
 var blacksmith = new Blacksmith(weaponOffers, inputSelector);

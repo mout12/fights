@@ -170,32 +170,41 @@ public class DataLoadingService
         return offers;
     }
 
-    public Player LoadPlayerTemplate(string filePath, Func<string, IWeapon> weaponResolver, Func<string, IArmor> armorResolver)
+    public List<PlayerTemplate> LoadPlayerTemplates(string filePath, Func<string, IWeapon> weaponResolver, Func<string, IArmor> armorResolver)
     {
         ArgumentNullException.ThrowIfNull(weaponResolver);
         ArgumentNullException.ThrowIfNull(armorResolver);
 
         var fullPath = EnsureFileExists(filePath, "New game template");
-        var data = ParseKeyValueLines(File.ReadLines(fullPath));
+        var sections = ParsePlayerTemplateSections(File.ReadLines(fullPath));
+        if (sections.Count == 0)
+        {
+            throw new InvalidDataException("No player templates were found in the new game data.");
+        }
 
-        var name = GetRequiredString(data, "Name");
-        var level = GetRequiredInt(data, "Level");
-        var health = GetRequiredInt(data, "Health");
-        var maxHealth = GetRequiredInt(data, "MaxHealth");
-        var weaponName = GetRequiredString(data, "WeaponName");
-        var armorName = GetRequiredString(data, "ArmorName");
-        var gold = GetRequiredUint(data, "Gold");
+        var templates = new List<PlayerTemplate>(sections.Count);
+        foreach (var section in sections)
+        {
+            try
+            {
+                var template = CreatePlayerTemplate(section, weaponResolver, armorResolver);
+                templates.Add(template);
+            }
+            catch (Exception ex)
+            {
+                var identifier = section.TryGetValue("TemplateName", out var templateName) && !string.IsNullOrWhiteSpace(templateName)
+                    ? templateName
+                    : section.TryGetValue("Name", out var name) ? name : "<unknown>";
+                Console.WriteLine($"Skipping player template '{identifier}': {ex.Message}");
+            }
+        }
 
-        var player = new Player(
-            name,
-            level,
-            maxHealth,
-            weaponResolver(weaponName),
-            armorResolver(armorName),
-            gold);
+        if (templates.Count == 0)
+        {
+            throw new InvalidDataException("No valid player templates were found in the new game data.");
+        }
 
-        player.RestoreHealth(health, maxHealth);
-        return player;
+        return templates;
     }
 
     public List<LevelSetup> LoadLevelSetups(string filePath, Func<string, IWeapon> weaponResolver, Func<string, IArmor> armorResolver)
@@ -621,6 +630,84 @@ public class DataLoadingService
         }
 
         return data;
+    }
+
+    private static List<Dictionary<string, string>> ParsePlayerTemplateSections(IEnumerable<string> lines)
+    {
+        var sections = new List<Dictionary<string, string>>();
+        Dictionary<string, string>? currentSection = null;
+
+        foreach (var rawLine in lines)
+        {
+            var trimmed = rawLine.Trim();
+            if (string.IsNullOrEmpty(trimmed) || trimmed.StartsWith("#", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (trimmed.Equals("[Player]", StringComparison.OrdinalIgnoreCase))
+            {
+                if (currentSection is not null && currentSection.Count > 0)
+                {
+                    sections.Add(currentSection);
+                }
+
+                currentSection = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                continue;
+            }
+
+            if (trimmed.Equals("[/Player]", StringComparison.OrdinalIgnoreCase))
+            {
+                if (currentSection is not null && currentSection.Count > 0)
+                {
+                    sections.Add(currentSection);
+                }
+
+                currentSection = null;
+                continue;
+            }
+
+            if (currentSection is null)
+            {
+                continue;
+            }
+
+            var parts = trimmed.Split('=', 2, StringSplitOptions.TrimEntries);
+            if (parts.Length == 2 && !string.IsNullOrEmpty(parts[0]))
+            {
+                currentSection[parts[0]] = parts[1];
+            }
+        }
+
+        if (currentSection is not null && currentSection.Count > 0)
+        {
+            sections.Add(currentSection);
+        }
+
+        return sections;
+    }
+
+    private static PlayerTemplate CreatePlayerTemplate(
+        Dictionary<string, string> data,
+        Func<string, IWeapon> weaponResolver,
+        Func<string, IArmor> armorResolver)
+    {
+        var name = GetRequiredString(data, "Name");
+        var title = data.TryGetValue("TemplateName", out var templateName) && !string.IsNullOrWhiteSpace(templateName)
+            ? templateName
+            : name;
+        var level = GetRequiredInt(data, "Level");
+        var health = GetRequiredInt(data, "Health");
+        var maxHealth = GetRequiredInt(data, "MaxHealth");
+        var weaponName = GetRequiredString(data, "WeaponName");
+        var armorName = GetRequiredString(data, "ArmorName");
+        var gold = GetRequiredUint(data, "Gold");
+
+        // Validate references early
+        weaponResolver(weaponName);
+        armorResolver(armorName);
+
+        return new PlayerTemplate(title, name, level, health, maxHealth, weaponName, armorName, gold);
     }
 
     private static string GetRequiredString(Dictionary<string, string> data, string key)
