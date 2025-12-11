@@ -34,4 +34,10 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="Fights.Tests\**" />
+    <EmbeddedResource Remove="Fights.Tests\**" />
+    <None Remove="Fights.Tests\**" />
+  </ItemGroup>
+
 </Project>
