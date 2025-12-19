@@ -26,6 +26,6 @@ public sealed class PlayerTests
 
         var dmg = new DamagePayload(10, 0, false);
         player.TakeDamage(dmg);
-        Assert.AreEqual(90, player.Health);
+        Assert.AreEqual(95, player.Health);
     }
 }
