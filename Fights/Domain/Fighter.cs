@@ -40,7 +40,7 @@ public class Fighter : IFighter
         }
 
         var mitigatedDamage = baseDamage;
-        if (Random.Shared.Next(0, 2) == 0) // 50/50 chance to mitigate
+        if (GameRandom.Current.Next(0, 2) == 0) // 50/50 chance to mitigate
         {
             mitigatedDamage = Math.Max(0, baseDamage - Armor.Defense);
         }
@@ -132,7 +132,7 @@ public class Fighter : IFighter
             return PoisonTickResult.None;
         }
 
-        var triggered = Random.Shared.Next(1, 101) <= poison.TickChancePercent;
+        var triggered = GameRandom.Current.Next(1, 101) <= poison.TickChancePercent;
         var damage = triggered ? poison.DamagePerTurn : 0;
         var remaining = poison.RemainingTurns - 1;
         _poison = remaining > 0 ? new PoisonState(poison.TickChancePercent, poison.DamagePerTurn, remaining) : null;

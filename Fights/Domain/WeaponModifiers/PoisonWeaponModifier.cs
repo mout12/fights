@@ -33,7 +33,7 @@ public sealed class PoisonWeaponModifier : IWeaponModifier
             return payload;
         }
 
-        if (Random.Shared.Next(1, 101) > _applyChancePercent)
+        if (GameRandom.Current.Next(1, 101) > _applyChancePercent)
         {
             return payload;
         }

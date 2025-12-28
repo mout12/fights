@@ -27,7 +27,7 @@ public sealed class BreakableWeaponModifier : IWeaponModifier
     {
         ArgumentNullException.ThrowIfNull(weapon);
 
-        if (Random.Shared.Next(0, _breakChance) != 0)
+        if (GameRandom.Current.Next(0, _breakChance) != 0)
         {
             return;
         }

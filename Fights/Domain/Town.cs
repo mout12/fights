@@ -100,7 +100,7 @@ public class Town
             return true;
         }
 
-        var enemy = level.Enemies[Random.Shared.Next(level.Enemies.Count)];
+        var enemy = level.Enemies[GameRandom.Current.Next(level.Enemies.Count)];
         Console.WriteLine($"A wild {enemy.Name} appears! Prepare for battle.");
 
         var fight = new Fight(_player, enemy, _inputSelector);

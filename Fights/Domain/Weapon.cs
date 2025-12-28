@@ -72,7 +72,7 @@ public class Weapon : IWeapon
             modifier.BeforeAttack(this);
         }
 
-        var isCritical = Random.Shared.Next(0, 10) == 0; // 10% chance
+        var isCritical = GameRandom.Current.Next(0, 10) == 0; // 10% chance
         var damage = isCritical ? Damage * 2 : Damage;
         IDamagePayload payload = new DamagePayload(damage, selfDamage: 0, isCritical);
 
