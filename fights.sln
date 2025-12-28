@@ -3,64 +3,64 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fights", "fights.csproj", "{9EACAA28-04C5-2BA5-246E-C2F6490F7F1C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fights", "Fights\\fights.csproj", "{9EACAA28-04C5-2BA5-246E-C2F6490F7F1C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{60167427-D657-4E80-96DD-6B2A3553D5CF}"
 	ProjectSection(SolutionItems) = preProject
-		Data\Armor.txt = Data\Armor.txt
-		Data\Weapons.txt = Data\Weapons.txt
-		Data\Blacksmith.txt = Data\Blacksmith.txt
-		Data\Armorer.txt = Data\Armorer.txt
-		Data\NewGame.txt = Data\NewGame.txt
-		Data\Levels.txt = Data\Levels.txt
+		Fights\Data\Armor.txt = Fights\Data\Armor.txt
+		Fights\Data\Weapons.txt = Fights\Data\Weapons.txt
+		Fights\Data\Blacksmith.txt = Fights\Data\Blacksmith.txt
+		Fights\Data\Armorer.txt = Fights\Data\Armorer.txt
+		Fights\Data\NewGame.txt = Fights\Data\NewGame.txt
+		Fights\Data\Levels.txt = Fights\Data\Levels.txt
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{8AEC27C7-1E75-4C76-99AF-37840C1E39AB}"
 	ProjectSection(SolutionItems) = preProject
-		Services\ConsoleInputSelectionService.cs = Services\ConsoleInputSelectionService.cs
-		Services\DataLoadingService.cs = Services\DataLoadingService.cs
-		Services\IInputSelectionService.cs = Services\IInputSelectionService.cs
-		Services\SaveGameService.cs = Services\SaveGameService.cs
+		Fights\Services\ConsoleInputSelectionService.cs = Fights\Services\ConsoleInputSelectionService.cs
+		Fights\Services\DataLoadingService.cs = Fights\Services\DataLoadingService.cs
+		Fights\Services\IInputSelectionService.cs = Fights\Services\IInputSelectionService.cs
+		Fights\Services\SaveGameService.cs = Fights\Services\SaveGameService.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Contracts", "Contracts", "{141DD4FA-6EFF-4B28-B5B9-1F176C736504}"
 	ProjectSection(SolutionItems) = preProject
-		Contracts\IArmor.cs = Contracts\IArmor.cs
-		Contracts\IDamagePayload.cs = Contracts\IDamagePayload.cs
-		Contracts\IFighter.cs = Contracts\IFighter.cs
-		Contracts\ILevel.cs = Contracts\ILevel.cs
-		Contracts\IWeapon.cs = Contracts\IWeapon.cs
-		Contracts\WeaponState.cs = Contracts\WeaponState.cs
+		Fights\Contracts\IArmor.cs = Fights\Contracts\IArmor.cs
+		Fights\Contracts\IDamagePayload.cs = Fights\Contracts\IDamagePayload.cs
+		Fights\Contracts\IFighter.cs = Fights\Contracts\IFighter.cs
+		Fights\Contracts\ILevel.cs = Fights\Contracts\ILevel.cs
+		Fights\Contracts\IWeapon.cs = Fights\Contracts\IWeapon.cs
+		Fights\Contracts\WeaponState.cs = Fights\Contracts\WeaponState.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{D6138EAA-68F4-4A0E-A237-47AADFAE74B4}"
 	ProjectSection(SolutionItems) = preProject
-		Domain\Armor.cs = Domain\Armor.cs
-		Domain\Armorer.cs = Domain\Armorer.cs
-		Domain\Blacksmith.cs = Domain\Blacksmith.cs
-		Domain\Boss.cs = Domain\Boss.cs
-		Domain\DamagePayload.cs = Domain\DamagePayload.cs
-		Domain\Fight.cs = Domain\Fight.cs
-		Domain\Fighter.cs = Domain\Fighter.cs
-		Domain\HealersHut.cs = Domain\HealersHut.cs
-		Domain\LevelContent.cs = Domain\LevelContent.cs
-		Domain\LevelSetup.cs = Domain\LevelSetup.cs
-		Domain\Player.cs = Domain\Player.cs
-		Domain\Town.cs = Domain\Town.cs
-		Domain\Weapon.cs = Domain\Weapon.cs
+		Fights\Domain\Armor.cs = Fights\Domain\Armor.cs
+		Fights\Domain\Armorer.cs = Fights\Domain\Armorer.cs
+		Fights\Domain\Blacksmith.cs = Fights\Domain\Blacksmith.cs
+		Fights\Domain\Boss.cs = Fights\Domain\Boss.cs
+		Fights\Domain\DamagePayload.cs = Fights\Domain\DamagePayload.cs
+		Fights\Domain\Fight.cs = Fights\Domain\Fight.cs
+		Fights\Domain\Fighter.cs = Fights\Domain\Fighter.cs
+		Fights\Domain\HealersHut.cs = Fights\Domain\HealersHut.cs
+		Fights\Domain\LevelContent.cs = Fights\Domain\LevelContent.cs
+		Fights\Domain\LevelSetup.cs = Fights\Domain\LevelSetup.cs
+		Fights\Domain\Player.cs = Fights\Domain\Player.cs
+		Fights\Domain\Town.cs = Fights\Domain\Town.cs
+		Fights\Domain\Weapon.cs = Fights\Domain\Weapon.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WeaponModifiers", "WeaponModifiers", "{B5F1C5B2-0CE4-4A77-8D9C-E7B1BFD4A655}"
 	ProjectSection(SolutionItems) = preProject
-		Domain\WeaponModifiers\BreakableWeaponModifier.cs = Domain\WeaponModifiers\BreakableWeaponModifier.cs
-		Domain\WeaponModifiers\DoubleStrikeWeaponModifier.cs = Domain\WeaponModifiers\DoubleStrikeWeaponModifier.cs
-		Domain\WeaponModifiers\IRepairableWeaponModifier.cs = Domain\WeaponModifiers\IRepairableWeaponModifier.cs
-		Domain\WeaponModifiers\IWeaponModifier.cs = Domain\WeaponModifiers\IWeaponModifier.cs
-		Domain\WeaponModifiers\RepairWeaponModifier.cs = Domain\WeaponModifiers\RepairWeaponModifier.cs
-		Domain\WeaponModifiers\SelfDamageWeaponModifier.cs = Domain\WeaponModifiers\SelfDamageWeaponModifier.cs
+		Fights\Domain\WeaponModifiers\BreakableWeaponModifier.cs = Fights\Domain\WeaponModifiers\BreakableWeaponModifier.cs
+		Fights\Domain\WeaponModifiers\DoubleStrikeWeaponModifier.cs = Fights\Domain\WeaponModifiers\DoubleStrikeWeaponModifier.cs
+		Fights\Domain\WeaponModifiers\IRepairableWeaponModifier.cs = Fights\Domain\WeaponModifiers\IRepairableWeaponModifier.cs
+		Fights\Domain\WeaponModifiers\IWeaponModifier.cs = Fights\Domain\WeaponModifiers\IWeaponModifier.cs
+		Fights\Domain\WeaponModifiers\RepairWeaponModifier.cs = Fights\Domain\WeaponModifiers\RepairWeaponModifier.cs
+		Fights\Domain\WeaponModifiers\SelfDamageWeaponModifier.cs = Fights\Domain\WeaponModifiers\SelfDamageWeaponModifier.cs
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fights.Tests", "Fights.Tests\Fights.Tests.csproj", "{541CD6C0-ABEC-4975-B6AF-C7CA072926DE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fights.Tests", "Tests\\Fights.Tests\\Fights.Tests.csproj", "{541CD6C0-ABEC-4975-B6AF-C7CA072926DE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

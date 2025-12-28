@@ -28,7 +28,7 @@ jobs:
         run: dotnet build fights.sln --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test fights.sln --configuration Release --no-build --verbosity normal
+        run: dotnet test fights.sln --configuration Release --verbosity normal
 
   release:
     if: github.event_name == 'release'
@@ -46,7 +46,7 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Run unit tests
-        run: dotnet test fights.sln --configuration Release --no-build --verbosity normal
+        run: dotnet test fights.sln --configuration Release --verbosity normal
 
       - name: Publish Release build
         run: dotnet publish fights.sln --configuration Release --output publish
