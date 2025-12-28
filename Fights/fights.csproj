@@ -34,11 +34,4 @@
     </None>
   </ItemGroup>
 
-  <Target Name="RebuildTestProjects" AfterTargets="Build">
-    <MSBuild
-      Projects="..\\Tests\\Fights.Tests\\Fights.Tests.csproj"
-      Targets="Rebuild"
-      Properties="Configuration=$(Configuration);BuildProjectReferences=false" />
-  </Target>
-
 </Project>
