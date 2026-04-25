@@ -3,6 +3,7 @@ using fights;
 namespace Fights.Tests;
 
 [TestClass]
+[DoNotParallelize]
 public sealed class PlayerTests
 {
     private sealed class FixedRandom : IRandomNumberGenerator

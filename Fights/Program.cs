@@ -45,6 +45,13 @@ IArmor GetArmor(string name)
 
 var dataLoader = new DataLoadingService();
 var inputSelector = new ConsoleInputSelectionService();
+var devMode = args.Any(arg =>
+    arg.Equals("--dev", StringComparison.OrdinalIgnoreCase) ||
+    arg.Equals("dev", StringComparison.OrdinalIgnoreCase));
+if (devMode)
+{
+    Console.WriteLine("Developer mode enabled.");
+}
 
 var weaponDataPath = Path.Combine(AppContext.BaseDirectory, "Data", "Weapons.txt");
 foreach (var weapon in dataLoader.LoadWeapons(weaponDataPath))
@@ -96,7 +103,7 @@ foreach (var setup in levelSetups)
 }
 
 var player = InitializePlayer(saveGameService);
-var town = new Town(player, blacksmith, armorer, healersHut, levelContents, inputSelector);
+var town = new Town(player, blacksmith, armorer, healersHut, levelContents, inputSelector, devMode);
 var leftTownPeacefully = town.Enter();
 
 if (leftTownPeacefully)

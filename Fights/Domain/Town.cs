@@ -17,6 +17,7 @@ public class Town
     private readonly HealersHut _healersHut;
     private readonly Dictionary<int, LevelContent> _levels;
     private readonly IInputSelectionService _inputSelector;
+    private readonly bool _devMode;
 
     public Town(
         Player player,
@@ -24,7 +25,8 @@ public class Town
         Armorer armorer,
         HealersHut healersHut,
         Dictionary<int, LevelContent> levels,
-        IInputSelectionService inputSelector)
+        IInputSelectionService inputSelector,
+        bool devMode = false)
     {
         _player = player ?? throw new ArgumentNullException(nameof(player));
         _blacksmith = blacksmith ?? throw new ArgumentNullException(nameof(blacksmith));
@@ -32,6 +34,7 @@ public class Town
         _healersHut = healersHut ?? throw new ArgumentNullException(nameof(healersHut));
         _levels = levels ?? throw new ArgumentNullException(nameof(levels));
         _inputSelector = inputSelector ?? throw new ArgumentNullException(nameof(inputSelector));
+        _devMode = devMode;
 
         if (_levels.Count == 0)
         {
@@ -106,20 +109,72 @@ public class Town
             return true;
         }
 
+        if (_devMode)
+        {
+            return StartDevFight(level);
+        }
+
         var outingCount = level.Enemies.Count + RandomEncounters.Count;
         var outingIndex = GameRandom.Current.Next(outingCount);
         if (outingIndex >= level.Enemies.Count)
         {
-            var encounter = RandomEncounters[outingIndex - level.Enemies.Count];
-            Console.WriteLine($"You venture out and stumble into a random encounter: {encounter.Name}!");
-            return encounter.Execute(_player, level, _inputSelector);
+            return StartRandomEncounter(level, RandomEncounters[outingIndex - level.Enemies.Count]);
         }
 
-        var enemy = level.Enemies[outingIndex];
+        return StartNormalFight(level.Enemies[outingIndex]);
+    }
+
+    private bool StartDevFight(LevelContent level)
+    {
+        var selection = _inputSelector.SelectOption("Developer mode: choose the outing type:", new[]
+        {
+            new InputOption<Func<bool>>("[N]ormal fight", () => StartDevNormalFight(level), Hotkey: 'n'),
+            new InputOption<Func<bool>>("[R]andom encounter", () => StartDevRandomEncounter(level), Hotkey: 'r')
+        });
+
+        return selection();
+    }
+
+    private bool StartDevNormalFight(LevelContent level)
+    {
+        var enemyOptions = new List<InputOption<Func<bool>>>(level.Enemies.Count);
+        foreach (var enemy in level.Enemies)
+        {
+            enemyOptions.Add(new InputOption<Func<bool>>(
+                $"{enemy.Name} ({enemy.Health}/{enemy.MaxHealth} HP, {enemy.Weapon.Name}, {enemy.Armor.Name}, {enemy.Gold}g)",
+                () => StartNormalFight(enemy)));
+        }
+
+        var selection = _inputSelector.SelectOption("Developer mode: choose an enemy:", enemyOptions);
+        return selection();
+    }
+
+    private bool StartDevRandomEncounter(LevelContent level)
+    {
+        var encounterOptions = new List<InputOption<Func<bool>>>(RandomEncounters.Count);
+        foreach (var encounter in RandomEncounters)
+        {
+            encounterOptions.Add(new InputOption<Func<bool>>(
+                encounter.Name,
+                () => StartRandomEncounter(level, encounter)));
+        }
+
+        var selection = _inputSelector.SelectOption("Developer mode: choose a random encounter:", encounterOptions);
+        return selection();
+    }
+
+    private bool StartNormalFight(Fighter enemy)
+    {
         Console.WriteLine($"A wild {enemy.Name} appears! Prepare for battle.");
 
         var fight = new Fight(_player, enemy, _inputSelector);
         return fight.Start();
+    }
+
+    private bool StartRandomEncounter(LevelContent level, IRandomEncounter encounter)
+    {
+        Console.WriteLine($"You venture out and stumble into a random encounter: {encounter.Name}!");
+        return encounter.Execute(_player, level, _inputSelector);
     }
 
     private bool StartBossFight()
