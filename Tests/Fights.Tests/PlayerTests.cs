@@ -44,4 +44,18 @@ public sealed class PlayerTests
         player.TakeDamage(dmg);
         Assert.AreEqual(95, player.Health);
     }
+
+    [TestMethod]
+    public void FaeryEncounter_HealsPlayerToFullHealth()
+    {
+        var weapon = new Weapon("Starter Sword", 10);
+        var armor = new Armor("Leather Armor", 2);
+        GameRandom.Current = new FixedRandom(value: 1); // skip mitigation
+        var player = new Player("Rookie", 1, 100, weapon, armor, 25);
+        player.TakeDamage(new DamagePayload(40, 0, false));
+
+        new FaeryEncounter().Execute(player);
+
+        Assert.AreEqual(player.MaxHealth, player.Health);
+    }
 }

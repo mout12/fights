@@ -5,6 +5,11 @@ namespace fights;
 
 public class Town
 {
+    private static readonly IReadOnlyList<IRandomEncounter> RandomEncounters = new IRandomEncounter[]
+    {
+        new FaeryEncounter()
+    };
+
     private readonly Player _player;
     private readonly Blacksmith _blacksmith;
     private readonly Armorer _armorer;
@@ -100,7 +105,17 @@ public class Town
             return true;
         }
 
-        var enemy = level.Enemies[GameRandom.Current.Next(level.Enemies.Count)];
+        var outingCount = level.Enemies.Count + RandomEncounters.Count;
+        var outingIndex = GameRandom.Current.Next(outingCount);
+        if (outingIndex >= level.Enemies.Count)
+        {
+            var encounter = RandomEncounters[outingIndex - level.Enemies.Count];
+            Console.WriteLine($"You venture out and stumble into a random encounter: {encounter.Name}!");
+            encounter.Execute(_player);
+            return true;
+        }
+
+        var enemy = level.Enemies[outingIndex];
         Console.WriteLine($"A wild {enemy.Name} appears! Prepare for battle.");
 
         var fight = new Fight(_player, enemy, _inputSelector);
