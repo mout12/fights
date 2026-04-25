@@ -3,5 +3,5 @@ namespace fights;
 public interface IRandomEncounter
 {
     string Name { get; }
-    void Execute(Player player);
+    bool Execute(Player player, LevelContent level, IInputSelectionService inputSelector);
 }

@@ -54,8 +54,54 @@ public sealed class PlayerTests
         var player = new Player("Rookie", 1, 100, weapon, armor, 25);
         player.TakeDamage(new DamagePayload(40, 0, false));
 
-        new FaeryEncounter().Execute(player);
+        var level = new LevelContent(new List<Fighter> { new("Target", 10, weapon, armor, 0) }, new Boss("Boss", 1, 10, weapon, armor, 0));
+
+        new FaeryEncounter().Execute(player, level, new FixedSelectionService<bool>(true));
 
         Assert.AreEqual(player.MaxHealth, player.Health);
+    }
+
+    [TestMethod]
+    public void MysteryBoxEncounter_WhenSafeAndOpened_AwardsGold()
+    {
+        var weapon = new Weapon("Starter Sword", 10);
+        var armor = new Armor("Leather Armor", 2);
+        var player = new Player("Rookie", 1, 100, weapon, armor, 25);
+        var level = new LevelContent(new List<Fighter> { new("Target", 10, weapon, armor, 0) }, new Boss("Boss", 1, 10, weapon, armor, 0));
+        GameRandom.Current = new FixedRandom(value: 100); // avoid trap and award max configured gold
+
+        var continued = new MysteryBoxEncounter().Execute(player, level, new FixedSelectionService<bool>(true));
+
+        Assert.IsTrue(continued);
+        Assert.AreEqual<uint>(125, player.Gold);
+    }
+
+    [TestMethod]
+    public void MysteryBoxEncounter_WhenLeftAlone_DoesNotAwardGold()
+    {
+        var weapon = new Weapon("Starter Sword", 10);
+        var armor = new Armor("Leather Armor", 2);
+        var player = new Player("Rookie", 1, 100, weapon, armor, 25);
+        var level = new LevelContent(new List<Fighter> { new("Target", 10, weapon, armor, 0) }, new Boss("Boss", 1, 10, weapon, armor, 0));
+
+        var continued = new MysteryBoxEncounter().Execute(player, level, new FixedSelectionService<bool>(false));
+
+        Assert.IsTrue(continued);
+        Assert.AreEqual<uint>(25, player.Gold);
+    }
+
+    private sealed class FixedSelectionService<T> : IInputSelectionService
+    {
+        private readonly T _selection;
+
+        public FixedSelectionService(T selection)
+        {
+            _selection = selection;
+        }
+
+        public TResult SelectOption<TResult>(string prompt, IReadOnlyList<InputOption<TResult>> options)
+        {
+            return _selection is TResult result ? result : throw new InvalidOperationException("Unexpected selection type.");
+        }
     }
 }

@@ -7,7 +7,8 @@ public class Town
 {
     private static readonly IReadOnlyList<IRandomEncounter> RandomEncounters = new IRandomEncounter[]
     {
-        new FaeryEncounter()
+        new FaeryEncounter(),
+        new MysteryBoxEncounter()
     };
 
     private readonly Player _player;
@@ -111,8 +112,7 @@ public class Town
         {
             var encounter = RandomEncounters[outingIndex - level.Enemies.Count];
             Console.WriteLine($"You venture out and stumble into a random encounter: {encounter.Name}!");
-            encounter.Execute(_player);
-            return true;
+            return encounter.Execute(_player, level, _inputSelector);
         }
 
         var enemy = level.Enemies[outingIndex];
